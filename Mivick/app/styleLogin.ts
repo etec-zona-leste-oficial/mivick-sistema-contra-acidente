@@ -1,4 +1,5 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+const { width, height } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: {
@@ -6,51 +7,70 @@ export const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   content: {
-    padding: 32,
+    paddingHorizontal: width * 0.08,
+    paddingTop: height * 0.02,
+    
   },
-  forgotPassword: {
-    flexDirection: 'row',
-    marginTop: 8,
-  },
-  forgotPasswordText: {
-    color: '#6D96FF',
-    fontSize: 16,
-  },
-  loginButton: {
-    backgroundColor: '#F85200',
-    marginTop: 32,
-    marginBottom: 16,
-  },
- googleButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 16,
-  backgroundColor: 'transparent', // deixa o fundo transparente
+ textField: {
+  width: '100%',
+  height: height * 0.07,
+  backgroundColor: '#FFFFFF',
   borderRadius: 8,
-  marginTop: 16,
-  borderColor: '#F85200', // cor da borda
-  borderWidth: 2, // define a espessura da borda
+  paddingHorizontal: 12,
+  marginVertical: height * 0.015, // mantém espaçamento entre os campos
+  marginTop: height * 0.20,       // aumenta a distância do topo, “abaixando” os campos
+  color: '#1A202C', // texto preto/cinza escuro
+
+},
+forgotPassword: {
+  flexDirection: 'row',
+  marginTop: height * 0.01,      // aumenta a distância do campo de senha para o link
+},
+forgotPasswordText: {
+  color: '#6D96FF',
+  fontSize: height * 0.02,
 },
 
+  loginButton: {
+    backgroundColor: '#F85200',
+    marginTop: height * 0.09,
+    marginBottom: height * 0.02,
+    width: '100%',
+    height: height * 0.07,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: height * 0.02,
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+    marginTop: height * 0.02,
+    borderColor: '#F85200',
+    borderWidth: 2,
+    width: '100%',
+  },
   googleButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: height * 0.022,
     marginLeft: 8,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: height * 0.02,
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: width * 0.06,
+    height: width * 0.06,
     borderWidth: 2,
     borderColor: '#6D96FF',
     borderRadius: 4,
     justifyContent: 'center',
-    alignItems: 'center', // centraliza o ícone
+    alignItems: 'center',
   },
   checkboxChecked: {
     backgroundColor: '#6D96FF',
@@ -58,8 +78,9 @@ export const styles = StyleSheet.create({
   },
   checkboxText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: height * 0.018,
     marginLeft: 8,
+    flexShrink: 1,
   },
   termsText: {
     color: '#6D96FF',

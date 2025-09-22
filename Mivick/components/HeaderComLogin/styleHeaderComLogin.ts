@@ -1,12 +1,17 @@
-import { StyleSheet } from 'react-native';
-
+import { StyleSheet , Dimensions, Platform, StatusBar } from 'react-native';
+const { width, height } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   header: {
+    
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    height: height * 0.11,          // altura proporcional
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.015,
     backgroundColor: '#FF4500', // cor principal
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    
   },
   logoContainer: {
     flexDirection: 'row',
@@ -28,11 +33,11 @@ export const styles = StyleSheet.create({
     elevation: 5,
   },
   menuItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.04,
   },
   menuText: {
-    fontSize: 16,
+    fontSize: height * 0.02,
     color: '#333',
   },
 });

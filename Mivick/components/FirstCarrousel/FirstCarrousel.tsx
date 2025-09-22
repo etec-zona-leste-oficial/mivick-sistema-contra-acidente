@@ -6,15 +6,18 @@ import {
   TouchableOpacity,
   ImageSourcePropType,
   Text,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { styles } from './styleCarrousel';
 
 interface CarouselProps {
-  images: ImageSourcePropType[];   // agora obrigatório
+  images: ImageSourcePropType[];   // obrigatório
   autoPlayInterval?: number;       // opcional
+  style?: StyleProp<ViewStyle>;    // permite customização de altura/largura
 }
 
-export function FirstCarrousel({ images, autoPlayInterval = 5000 }: CarouselProps) {
+export function FirstCarrousel({ images, autoPlayInterval = 5000, style }: CarouselProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // autoplay
@@ -28,17 +31,17 @@ export function FirstCarrousel({ images, autoPlayInterval = 5000 }: CarouselProp
 
   if (!images || images.length === 0) {
     return (
-      <View style={[styles.carouselContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.carouselContainer, { justifyContent: 'center', alignItems: 'center' }, style]}>
         <Text style={{ color: '#fff' }}>Sem imagens</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.carouselContainer}>
+    <View style={[styles.carouselContainer, style]}>
       <ImageBackground
         source={images[activeImageIndex]}
-        style={styles.imageBackground}
+        style={[styles.imageBackground, { width: '100%', height: '100%' }]} // preenche o container
         resizeMode="cover"
       >
         <View style={styles.overlay} />

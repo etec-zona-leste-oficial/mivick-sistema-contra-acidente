@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet , Dimensions, Platform, StatusBar } from 'react-native';
 
 export const styles = StyleSheet.create({
   header: {
@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#FF4500', // headerOrange
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   title: {
     fontSize: 20,

@@ -1,7 +1,7 @@
 // Tabelas e criação do banco de dados 
 
-// src/database/schema.ts
-import { getDbConnection } from "./db";
+// app/database/schema.ts
+//import { getDbConnection } from "./db";
 
 export async function setupDatabase() {
   const db = await getDbConnection();
@@ -59,5 +59,5 @@ export async function setupDatabase() {
     );
   `);
 
-  console.log("✅ Banco de dados configurado!");
+  console.log("Banco de dados configurado!");
 }

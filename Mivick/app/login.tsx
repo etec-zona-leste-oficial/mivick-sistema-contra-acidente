@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -11,19 +11,28 @@ import { FirstButton } from '@/components/FirstButton';
 
 import { styles } from './styleLogin';
 
+const { width, height } = Dimensions.get("window");
+
 export default function Login() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Header/>
 
       <View style={styles.content}>
         <FirstTitle text="Login"  />
 
-        <FirstTextField placeholder="Nome" style={{ marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 375, borderRadius: 8, alignSelf: 'center', padding: 12,}} />
-        <FirstTextField placeholder="Senha" secureTextEntry style={{ marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 375, borderRadius: 8, alignSelf: 'center', padding: 12,}} />
+        <FirstTextField 
+          placeholder="Nome" 
+          style={[styles.textField, { marginTop: height * 0.03 }]} 
+        />
+        <FirstTextField 
+          placeholder="Senha" 
+          secureTextEntry 
+          style={[styles.textField, { marginTop: height * 0.0 }]} 
+        />
 
         <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotPasswordText}>Esqueceu a senha</Text>
@@ -35,15 +44,15 @@ export default function Login() {
           customStyle={styles.loginButton}
         />
 
-              <View
-            style={{
-              height: 2,          // espessura da linha
-              backgroundColor: '#F85200', // cor laranja
-              width: '100%',       // comprimento da linha
-              alignSelf: 'center',
-              marginVertical: 12, // espaço acima e abaixo da linha
-            }}
-                  />
+        <View
+          style={{
+            height: 2,
+            backgroundColor: '#F85200',
+            width: '100%',
+            alignSelf: 'center',
+            marginVertical: height * 0.02,
+          }}
+        />
 
         <TouchableOpacity style={styles.googleButton}>
           <FontAwesome name="google" size={24} color="#fff" />
@@ -51,21 +60,21 @@ export default function Login() {
         </TouchableOpacity>
 
         <View style={styles.checkboxContainer}>
-         <TouchableOpacity
-           style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
-           onPress={() => setAgreeToTerms(!agreeToTerms)}
-         >
-           {agreeToTerms && (
-             <FontAwesome name="check" size={16} color="#FFFFFF" />
-           )}
-         </TouchableOpacity>
-       
-         <Text style={styles.checkboxText}>
-           Ao clicar, você concorda com os{' '}
-           <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
-         </Text>
-       </View>
+          <TouchableOpacity
+            style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
+            onPress={() => setAgreeToTerms(!agreeToTerms)}
+          >
+            {agreeToTerms && (
+              <FontAwesome name="check" size={16} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
+
+          <Text style={styles.checkboxText}>
+            Ao clicar, você concorda com os{' '}
+            <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
+          </Text>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

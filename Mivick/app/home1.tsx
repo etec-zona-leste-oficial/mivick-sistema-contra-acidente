@@ -1,34 +1,41 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, ScrollView, Text, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
+
 import { FirstCard } from '../components/FirstCard/FirstCard';
 import { FirstTitle } from '../components/FirstTitle';
-import { useRouter } from 'expo-router';
 import { FirstSubTitle } from '../components/FirstSubTitle';
 import { FirstButton } from '../components/FirstButton';
-import { styles } from './styleHome1';
 import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
-import { FontAwesome } from '@expo/vector-icons';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
+import { styles } from './styleHome1';
 
+const { height } = Dimensions.get("window");
 
 const carouselImages = [
   require('../assets/images/primeira-bike1.jpg'),
   require('../assets/images/segundo.webp'),
   require('../assets/images/terceira.jpg')
 ];
-  const router = useRouter();
 
 export default function HomeScreen() {
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Header fixo no topo */}
-      <HeaderComLogin />
+  const router = useRouter();
 
-      {/* Conteúdo rolável */}
-      <ScrollView style={styles.container}>
-        {/* Carrossel no topo */}
-        <FirstCarrousel images={carouselImages} />
-        
+  return (
+    <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: height * 0.05 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header dentro do ScrollView */}
+        <HeaderComLogin />
+
+        {/* Carrossel grudado ao Header */}
+        <View style={{ height: height * 0.20, width: '100%' }}>
+          <FirstCarrousel images={carouselImages} style={{ flex: 1 }} />
+        </View>
 
         {/* Dispositivos Conectados */}
         <FirstTitle text="Dispositivos Conectados" />
@@ -43,15 +50,15 @@ export default function HomeScreen() {
           <FirstButton title="Conectar dispositivo" />
         </FirstCard>
 
-                <View
-                    style={{
-                      height: 2,          // espessura da linha
-                      backgroundColor: '#F85200', // cor laranja
-                      width: '100%',       // comprimento da linha
-                      alignSelf: 'center',
-                      marginVertical: 12, // espaço acima e abaixo da linha
-                    }}
-                          />
+        <View
+          style={{
+            height: 2,
+            backgroundColor: '#F85200',
+            width: '100%',
+            alignSelf: 'center',
+            marginVertical: height * 0.015,
+          }}
+        />
 
         {/* Contatos Cadastrados */}
         <FirstTitle text="Contatos cadastrados" />
@@ -62,25 +69,26 @@ export default function HomeScreen() {
           <Text style={styles.cardTextSmall}>
             Cadastre um contato para vê-lo aqui.
           </Text>
-          <FirstButton title="Cadastrar contato"  onPress={() => router.push('/cadastrarContato')} />
+          <FirstButton 
+            title="Cadastrar contato"  
+            onPress={() => router.push('/cadastrarContato')} 
+          />
         </FirstCard>
 
-                <View
-                    style={{
-                      height: 2,          // espessura da linha
-                      backgroundColor: '#F85200', // cor laranja
-                      width: '100%',       // comprimento da linha
-                      alignSelf: 'center',
-                      marginVertical: 12, // espaço acima e abaixo da linha
-                    }}
-                          />
+        <View
+          style={{
+            height: 2,
+            backgroundColor: '#F85200',
+            width: '100%',
+            alignSelf: 'center',
+            marginVertical: height * 0.015,
+          }}
+        />
 
-      
-
+        {/* Histórico */}
         <FirstCard>
-            {/* Histórico */}
-        <FirstTitle text="Verifique seu histórico" />
-        <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." />
+          <FirstTitle text="Verifique seu histórico" />
+          <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." />
           <FirstButton title="Histórico do dispositivo" />
         </FirstCard>
       </ScrollView>

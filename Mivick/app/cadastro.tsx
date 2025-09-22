@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -16,17 +16,17 @@ export default function Cadastro() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Header />
 
       <View style={styles.content}>
         <FirstTitle text="Cadastro" />
 
-        <FirstTextField placeholder="Nome" style={{ marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 335, borderRadius: 8, alignSelf: 'center', padding: 12, }} />
-        <FirstTextField placeholder="Telefone" style={{ marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 335, borderRadius: 8, alignSelf: 'center', padding: 12, }} />
-        <FirstTextField placeholder="Email" style={{  marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 335, borderRadius: 8, alignSelf: 'center', padding: 12, }} />
-        <FirstTextField placeholder="Senha" style={{  marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 335, borderRadius: 8, alignSelf: 'center', padding: 12, }} secureTextEntry />
-        <FirstTextField placeholder="Confirmar senha" style={{  marginTop: 25 , backgroundColor: '#FFFFFF' , height: 50 , width: 335, borderRadius: 8, alignSelf: 'center', padding: 12, }} secureTextEntry />
+        <FirstTextField placeholder="Nome" style={styles.textField} />
+        <FirstTextField placeholder="Telefone" style={styles.textField} />
+        <FirstTextField placeholder="Email" style={styles.textField} />
+        <FirstTextField placeholder="Senha" style={styles.textField} secureTextEntry />
+        <FirstTextField placeholder="Confirmar senha" style={styles.textField} secureTextEntry />
 
         <FirstButton
           title="Cadastre-se"
@@ -35,14 +35,14 @@ export default function Cadastro() {
         />
 
         <View
-    style={{
-      height: 2,          // espessura da linha
-      backgroundColor: '#F85200', // cor laranja
-      width: '100%',       // comprimento da linha
-      alignSelf: 'center',
-      marginVertical: 12, // espaço acima e abaixo da linha
-    }}
-          />
+          style={{
+            height: 2,
+            backgroundColor: '#F85200',
+            width: '100%',
+            alignSelf: 'center',
+            marginVertical: 12,
+          }}
+        />
 
         <TouchableOpacity style={styles.googleButton}>
           <FontAwesome name="google" size={24} color="#fff" />
@@ -50,21 +50,21 @@ export default function Cadastro() {
         </TouchableOpacity>
 
         <View style={styles.checkboxContainer}>
-  <TouchableOpacity
-    style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
-    onPress={() => setAgreeToTerms(!agreeToTerms)}
-  >
-    {agreeToTerms && (
-      <FontAwesome name="check" size={16} color="#FFFFFF" />
-    )}
-  </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
+            onPress={() => setAgreeToTerms(!agreeToTerms)}
+          >
+            {agreeToTerms && (
+              <FontAwesome name="check" size={16} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
 
-  <Text style={styles.checkboxText}>
-    Ao clicar, você concorda com os{' '}
-    <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
-  </Text>
-</View>
+          <Text style={styles.checkboxText}>
+            Ao clicar, você concorda com os{' '}
+            <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
+          </Text>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
