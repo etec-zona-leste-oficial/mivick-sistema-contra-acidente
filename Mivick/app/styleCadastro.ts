@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     color: '#1A202C', // texto preto/cinza escuro
-
+    
   },
   signupButton: {
     backgroundColor: '#F85200',

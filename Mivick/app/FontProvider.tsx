@@ -3,12 +3,12 @@ import { View, ActivityIndicator } from 'react-native';
 import { useFonts } from 'expo-font';
 
 interface Props {
-  children: ReactNode;
+  children: ReactNode; // <- aqui ajustamos
 }
 
 export function FontProvider({ children }: Props) {
   const [fontsLoaded] = useFonts({
-    'SansBoldPro': require('../assets/fonts/SourceSans3-Bold.ttf'),
+    SansBoldPro: require('../assets/fonts/SourceSans3-Bold.ttf'),
   });
 
   if (!fontsLoaded) {
@@ -19,5 +19,5 @@ export function FontProvider({ children }: Props) {
     );
   }
 
-  return <>{children}</>;
+  return <>{children}</>; // agora deve aceitar corretamente
 }

@@ -20,6 +20,7 @@ export const styles = StyleSheet.create({
   marginVertical: height * 0.015, // mantém espaçamento entre os campos
   marginTop: height * 0.20,       // aumenta a distância do topo, “abaixando” os campos
   color: '#1A202C', // texto preto/cinza escuro
+  
 
 },
 forgotPassword: {
