@@ -11,7 +11,7 @@ import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
 import { styles } from './styleHome1';
 
-const { height } = Dimensions.get("window");
+const { height ,  width } = Dimensions.get("window");
 
 const carouselImages = [
   require('../assets/images/primeira-bike1.jpg'),
@@ -38,23 +38,31 @@ export default function HomeScreen() {
         </View>
 
         {/* Dispositivos Conectados */}
-        <FirstTitle text="Dispositivos Conectados" />
-        <FirstSubTitle text="Para começar, conecte um dispositivo Mivick." />
+        <View style={{ marginTop: height * 0.03, paddingHorizontal: 12 }}>
+          <FirstTitle text="Dispositivos Conectados" />
+          <FirstSubTitle text="Para começar, conecte um dispositivo Mivick." />
+        </View>
 
-        <FirstCard>
-          <FontAwesome name="wifi" size={20} color="#FF4500" style={{ marginRight: 6 }} />
-          <FirstSubTitle text="Como conectar?" />
-          <Text style={styles.cardText}>
+        <FirstCard customStyle={{ width: width * 0.9, alignSelf: 'center', paddingHorizontal: 16 }}>
+          {/* Linha com ícone e subtítulo centralizados */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+            <FontAwesome name="wifi" size={20} color="#FF4500" style={{ marginRight: 6 }} />
+            <FirstTitle text="Como conectar?" />
+          </View>
+
+          <Text style={[styles.cardText, { textAlign: 'center',marginBottom: '20%' }]}>
             Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer.
           </Text>
+
           <FirstButton title="Conectar dispositivo" />
         </FirstCard>
+
 
         <View
           style={{
             height: 2,
             backgroundColor: '#F85200',
-            width: '100%',
+            width: '90%',
             alignSelf: 'center',
             marginVertical: height * 0.015,
           }}
@@ -69,9 +77,9 @@ export default function HomeScreen() {
           <Text style={styles.cardTextSmall}>
             Cadastre um contato para vê-lo aqui.
           </Text>
-          <FirstButton 
-            title="Cadastrar contato"  
-            onPress={() => router.push('/cadastrarContato')} 
+          <FirstButton
+            title="Cadastrar contato"
+            onPress={() => router.push('/cadastrarContato')}
           />
         </FirstCard>
 
@@ -79,7 +87,7 @@ export default function HomeScreen() {
           style={{
             height: 2,
             backgroundColor: '#F85200',
-            width: '100%',
+            width: '90%',
             alignSelf: 'center',
             marginVertical: height * 0.015,
           }}

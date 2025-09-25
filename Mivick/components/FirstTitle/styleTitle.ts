@@ -1,10 +1,18 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions, PixelRatio } from "react-native";
+
+const { width } = Dimensions.get("window");
+
+// Função para ajustar tamanho da fonte dinamicamente
+const scaleFont = (size: number) => {
+  const scale = width / 375; // 375 = base iPhone X
+  return Math.round(PixelRatio.roundToNearestPixel(size * scale));
+};
 
 export const styles = StyleSheet.create({
   title: {
-    fontSize: 48, // text-4xl equivalente
-    color: '#FFFFFF',
-    fontFamily: "SansBoldPro",
-    
+    fontSize: scaleFont(24), // Responsivo (~24 base)
+    color: "#FFFFFF",
+    fontFamily: "SansBoldPro", // Mantém negrito
+    marginBottom: 6,
   },
 });
