@@ -11,7 +11,7 @@ import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
 import { styles } from './styleHome1';
 
-const { height ,  width } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 
 const carouselImages = [
   require('../assets/images/primeira-bike1.jpg'),
@@ -50,7 +50,7 @@ export default function HomeScreen() {
             <FirstTitle text="Como conectar?" />
           </View>
 
-          <Text style={[styles.cardText, { textAlign: 'center',marginBottom: '20%' }]}>
+          <Text style={[styles.cardText, { textAlign: 'center', marginBottom: '20%' }]}>
             Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer.
           </Text>
 
@@ -94,9 +94,12 @@ export default function HomeScreen() {
         />
 
         {/* Histórico */}
-        <FirstCard>
-          <FirstTitle text="Verifique seu histórico" />
-          <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." />
+        <FirstCard customStyle={{ borderRadius: 0 }}>
+          <View style={{ alignItems: 'center', marginBottom: '10%' }}>
+            <FirstTitle text="Verifique seu histórico" />
+            <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." />
+          </View>
+          {/* Botão alinhado padrão */}
           <FirstButton title="Histórico do dispositivo" />
         </FirstCard>
       </ScrollView>
