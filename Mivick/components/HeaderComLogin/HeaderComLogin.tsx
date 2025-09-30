@@ -1,63 +1,28 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Logo } from '@/components/Logo';
-import { styles } from './styleHeaderComLogin';
-import { Ionicons } from '@expo/vector-icons';
+// components/HeaderComLogin.tsx
+import React from "react";
+import { View, TouchableOpacity } from "react-native";
+import { useRouter, useNavigation } from "expo-router";
+import { Logo } from "@/components/Logo";
+import { styles } from "./styleHeaderComLogin";
+import { Ionicons } from "@expo/vector-icons";
 
-export function HeaderComLogin() {  
+export function HeaderComLogin() {
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
+  const navigation = useNavigation<any>(); // para abrir o drawer
 
   return (
     <View style={styles.header}>
       {/* Logo + Nome */}
       <View style={styles.logoContainer}>
-         <TouchableOpacity onPress={() => router.push('/')}>
-                <Logo />
-          </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/home1")}>
+          <Logo />
+        </TouchableOpacity>
       </View>
 
-      {/* Botão menu sanduíche */}
-      <TouchableOpacity onPress={() => setMenuVisible(true)}>
+      {/* Botão menu sanduíche abre o Drawer */}
+      <TouchableOpacity onPress={() => navigation.openDrawer()}>
         <Ionicons name="menu" size={28} color="#fff" />
       </TouchableOpacity>
-
-      {/* Modal do menu */}
-      <Modal
-        visible={menuVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMenuVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPressOut={() => setMenuVisible(false)}
-        >
-          <View style={styles.menuContainer}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setMenuVisible(false);
-                router.push('/home1');
-              }}
-            >
-              <Text style={styles.menuText}>Home</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setMenuVisible(false);
-                router.push('/contato'); // ✅ rota contatos
-              }}
-            >
-              <Text style={styles.menuText}>Contatos</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 }
