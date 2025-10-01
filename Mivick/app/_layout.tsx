@@ -9,8 +9,8 @@ export default function Layout() {
       <Drawer
         screenOptions={{
           headerShown: false, 
-          drawerStyle: { backgroundColor: "#fff", width: 220 },
-          drawerLabelStyle: { fontSize: 16, color: "#333" },
+          drawerStyle: { backgroundColor: "#2D2D2D", width: 220 },
+          drawerLabelStyle: { fontSize: 16, color: "#fff" },
         }}
       >
         {/* Home */}

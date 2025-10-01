@@ -1,7 +1,7 @@
 // Tabelas e criação do banco de dados 
 
 // app/database/schema.ts
-//import { getDbConnection } from "./db";
+  import { getDbConnection } from "./db";
 
 export async function setupDatabase() {
   const db = await getDbConnection();
