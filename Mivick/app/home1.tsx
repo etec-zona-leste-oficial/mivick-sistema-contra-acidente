@@ -10,6 +10,7 @@ import { FirstButton } from '../components/FirstButton';
 import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
 import { styles } from './styleHome1';
+import { ContactCard } from '@/components/ContactCard/ContactCard';
 
 const { height, width } = Dimensions.get("window");
 
@@ -70,10 +71,8 @@ export default function HomeScreen() {
 
         {/* Contatos Cadastrados */}
         <FirstTitle text="Contatos cadastrados" />
-        <FirstCard>
-          <Text style={styles.cardText}>
-            Você ainda não possui um contato cadastrado.
-          </Text>
+        <ContactCard>
+          <FirstTitle text="Você ainda não possui um contato cadastrado." />
           <Text style={styles.cardTextSmall}>
             Cadastre um contato para vê-lo aqui.
           </Text>
@@ -81,7 +80,7 @@ export default function HomeScreen() {
             title="Cadastrar contato"
             onPress={() => router.push('/cadastrarContato')}
           />
-        </FirstCard>
+        </ContactCard>
 
         <View
           style={{
