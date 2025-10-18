@@ -30,10 +30,9 @@ export default function Login() {
        
       <View style={styles.content}>
         <FirstTitle text="Login"  />
-
         <FirstTextField 
           placeholder="Nome" 
-          style={[styles.textField, { marginTop: height * 0.03 }]} 
+          style={[styles.textField, { marginTop: height * 0.06 }]} 
         />
         <FirstTextField 
           placeholder="Senha" 

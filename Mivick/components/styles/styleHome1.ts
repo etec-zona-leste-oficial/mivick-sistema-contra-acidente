@@ -7,13 +7,13 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cardText: {
-    color: '#E2E8F0',
+    color: '#FFFFFF',
     fontSize: 14,
     marginVertical: 8,
   },
   cardTextSmall: {
-    color: '#A0AEC0',
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontSize: 13,
     marginBottom: 12,
   },
 });

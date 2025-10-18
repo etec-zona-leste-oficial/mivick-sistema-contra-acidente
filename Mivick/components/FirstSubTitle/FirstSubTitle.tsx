@@ -1,11 +1,17 @@
 import React from 'react';
-import { Text } from 'react-native';
-import { styles } from '../FirstSubTitle/styleSubTitle';
+import { Text, StyleSheet, TextStyle } from 'react-native';
+import { styles as defaultStyles } from '../FirstSubTitle/styleSubTitle';
 
 interface Props {
   text: string;
+
+  style?: TextStyle;  // permite adicionar margin, padding, etc.
 }
 
-export function FirstSubTitle({ text }: Props) {
-  return <Text style={styles.subTitle}>{text}</Text>;
+export function FirstSubTitle({ text, style }: Props) {
+  return (
+    <Text style={[defaultStyles.subTitle, style]}>
+      {text}
+    </Text>
+  );
 }

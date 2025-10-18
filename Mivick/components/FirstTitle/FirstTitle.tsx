@@ -4,8 +4,11 @@ import { styles } from '../FirstTitle/styleTitle';
 
 interface Props {
   text: string;
+  fontSize?: number;
+  style?: object;
+
 }
 
-export function FirstTitle({ text }: Props) {
-  return <Text style={styles.title}>{text}</Text>;
+export function FirstTitle({ text, fontSize, style }: Props) {
+  return <Text style={[styles.title, { fontSize }, style]}>{text}</Text>;
 }

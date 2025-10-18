@@ -10,7 +10,7 @@ const scaleFont = (size: number) => {
 
 export const styles = StyleSheet.create({
   title: {
-    fontSize: scaleFont(24), // Responsivo (~24 base)
+    fontSize: scaleFont(35), // Responsivo (~24 base)
     color: "#FFFFFF",
     fontFamily: "SansBoldPro", // Mantém negrito
     marginBottom: 6,

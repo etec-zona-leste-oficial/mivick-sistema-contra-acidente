@@ -5,7 +5,7 @@ const { height } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   carouselContainer: {
     width: '100%',
-    height: height * 0.75, // 45% da tela (ajuste conforme preferir)
+    height: height * 0.70, // 45% da tela (ajuste conforme preferir)
     alignSelf: 'center',
     overflow: 'hidden',
   },

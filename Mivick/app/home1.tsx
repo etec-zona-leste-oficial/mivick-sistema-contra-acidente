@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
         {/* Dispositivos Conectados */}
         <View style={{ marginTop: height * 0.03, paddingHorizontal: 12 }}>
-          <FirstTitle text="Dispositivos Conectados" />
+          <FirstTitle text="Dispositivos Conectados" fontSize={28}/>
           <FirstSubTitle text="Para começar, conecte um dispositivo Mivick." />
         </View>
 
@@ -48,12 +48,10 @@ export default function HomeScreen() {
           {/* Linha com ícone e subtítulo centralizados */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
             <FontAwesome name="wifi" size={20} color="#FF4500" style={{ marginRight: 6 }} />
-            <FirstTitle text="Como conectar?" />
+            <FirstTitle text="Como conectar?" fontSize={25} />
           </View>
 
-          <Text style={[styles.cardText, { textAlign: 'center', marginBottom: '20%' }]}>
-            Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer.
-          </Text>
+          <FirstSubTitle text = "Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer." style={{ marginBottom: 70, textAlign: 'center' }} />
 
           <FirstButton title="Conectar dispositivo" />
         </FirstCard>
@@ -70,12 +68,11 @@ export default function HomeScreen() {
         />
 
         {/* Contatos Cadastrados */}
-        <FirstTitle text="Contatos cadastrados" />
+        
+        <FirstTitle text="Contatos cadastrados" fontSize={23}/>
         <ContactCard>
-          <FirstTitle text="Você ainda não possui um contato cadastrado." />
-          <Text style={styles.cardTextSmall}>
-            Cadastre um contato para vê-lo aqui.
-          </Text>
+          <FirstTitle text="Você ainda não possui um contato cadastrado." fontSize={25} />
+          <FirstSubTitle text= "Cadastre um contato para vê-lo aqui."/>
           <FirstButton
             title="Cadastrar contato"
             onPress={() => router.push('/cadastrarContato')}
@@ -95,8 +92,8 @@ export default function HomeScreen() {
         {/* Histórico */}
         <FirstCard customStyle={{ borderRadius: 0 }}>
           <View style={{ alignItems: 'center', marginBottom: '10%' }}>
-            <FirstTitle text="Verifique seu histórico" />
-            <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." />
+            <FirstTitle text="Verifique seu histórico" fontSize={26} style={{ marginBottom: 20}}/>
+            <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." style={{ marginBottom: 20 ,textAlign: 'center'}} />
           </View>
           {/* Botão alinhado padrão */}
           <FirstButton title="Histórico do dispositivo" />

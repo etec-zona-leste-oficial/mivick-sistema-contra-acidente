@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
   },
   bottomButtons: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 35,
     width: '100%',
     paddingHorizontal: 32,
     paddingBottom: 32,
