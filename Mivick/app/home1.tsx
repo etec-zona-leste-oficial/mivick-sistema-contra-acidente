@@ -44,7 +44,7 @@ export default function HomeScreen() {
           <FirstSubTitle text="Para começar, conecte um dispositivo Mivick." />
         </View>
 
-        <FirstCard customStyle={{ width: width * 0.9, alignSelf: 'center', paddingHorizontal: 16 }}>
+        <FirstCard customStyle={{ width: width * 0.9, alignSelf: 'center', paddingHorizontal: 22 }}>
           {/* Linha com ícone e subtítulo centralizados */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
             <FontAwesome name="wifi" size={20} color="#FF4500" style={{ marginRight: 6 }} />
@@ -64,13 +64,15 @@ export default function HomeScreen() {
             width: '90%',
             alignSelf: 'center',
             marginVertical: height * 0.015,
+            marginBottom: height * 0.019,
           }}
         />
 
         {/* Contatos Cadastrados */}
-        
-        <FirstTitle text="Contatos cadastrados" fontSize={23}/>
-        <ContactCard>
+
+        <FirstTitle text="Contatos cadastrados" fontSize={25} style={{paddingHorizontal: 22, marginBottom: 25}}/>
+
+        <ContactCard style ={{ width: width * 0.6,height: height * 0.4 ,alignSelf: 'center', marginBottom: 16 }}>
           <FirstTitle text="Você ainda não possui um contato cadastrado." fontSize={25} />
           <FirstSubTitle text= "Cadastre um contato para vê-lo aqui."/>
           <FirstButton
@@ -86,6 +88,7 @@ export default function HomeScreen() {
             width: '90%',
             alignSelf: 'center',
             marginVertical: height * 0.015,
+            marginBottom: height * 0.019,
           }}
         />
 
