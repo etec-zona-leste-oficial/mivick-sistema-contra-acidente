@@ -9,7 +9,7 @@ import { FirstSubTitle } from '../components/FirstSubTitle';
 import { FirstButton } from '../components/FirstButton';
 import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
-import { styles } from './styleHome1';
+import { styles } from '../components/styles/styleHome1';
 import { ContactCard } from '@/components/ContactCard/ContactCard';
 
 const { height, width } = Dimensions.get("window");

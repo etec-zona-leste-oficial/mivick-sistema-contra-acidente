@@ -7,7 +7,7 @@ import { HeaderComLogin } from '../components/HeaderComLogin'; // 🔥 import do
 import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
-import { styles } from './styleCadastrarContato';
+import { styles } from '../components/styles/styleCadastrarContato';
 
 export default function CadastrarContato() {
     return (

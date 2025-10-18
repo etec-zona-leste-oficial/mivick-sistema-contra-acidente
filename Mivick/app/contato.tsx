@@ -5,7 +5,7 @@ import { FirstTitle } from '../components/FirstTitle';
 import { useRouter } from 'expo-router';
 import { FirstSubTitle } from '../components/FirstSubTitle';
 import { FirstButton } from '../components/FirstButton';
-import { styles } from './styleContato';
+import { styles } from '../components/styles/styleContato';
 import { HeaderComLogin } from '../components/HeaderComLogin'; // 🔥 import do header
 import { FontAwesome } from '@expo/vector-icons';
 

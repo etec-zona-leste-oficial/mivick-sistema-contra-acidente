@@ -1,16 +1,22 @@
+// Imports
 import React, { useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+
+// -------------------------
 
 // Componentes
 import { Header } from '@/components/Header';
 import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
+import { styles } from '../components/styles/styleLogin';
 
-import { styles } from './styleLogin';
 
+// -------------------------
+
+// Variável  dimensionais
 const { width, height } = Dimensions.get("window");
 
 export default function Login() {
@@ -21,6 +27,7 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       <Header/>
 
+       
       <View style={styles.content}>
         <FirstTitle text="Login"  />
 

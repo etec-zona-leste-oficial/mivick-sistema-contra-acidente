@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 // Componentes ajustados
 import { FirstButton } from '@/components/FirstButton';
 import { FirstCarrousel } from '@/components/FirstCarrousel';
-import { styles } from './styleHome';
-import { FontProvider } from '../app/FontProvider';
+import { styles } from '../components/styles/styleHome';
+import  FontProvider  from '../components/providers/FontProvider';
 
 // Imagens do carrossel
 const carouselImages = [

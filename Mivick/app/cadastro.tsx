@@ -9,7 +9,7 @@ import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 
-import { styles } from './styleCadastro';
+import { styles } from '../components/styles/styleCadastro';
 
 export default function Cadastro() {
   const router = useRouter();
