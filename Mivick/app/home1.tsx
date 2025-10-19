@@ -73,11 +73,12 @@ export default function HomeScreen() {
         <FirstTitle text="Contatos cadastrados" fontSize={25} style={{paddingHorizontal: 22, marginBottom: 25}}/>
 
         <ContactCard style ={{ width: width * 0.6,height: height * 0.4 ,alignSelf: 'center', marginBottom: 16 }}>
-          <FirstTitle text="Você ainda não possui um contato cadastrado." fontSize={25} />
-          <FirstSubTitle text= "Cadastre um contato para vê-lo aqui."/>
+          <FirstTitle text="Você ainda não possui um contato cadastrado." fontSize={28} style={{ marginTop: 22 }} />
+          <FirstSubTitle text= "Cadastre um contato para vê-lo aqui." />
           <FirstButton
             title="Cadastrar contato"
             onPress={() => router.push('/cadastrarContato')}
+            customStyle={{width: width * 0.5,height: 50, marginTop: 50}}
           />
         </ContactCard>
 
@@ -99,7 +100,7 @@ export default function HomeScreen() {
             <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." style={{ marginBottom: 20 ,textAlign: 'center'}} />
           </View>
           {/* Botão alinhado padrão */}
-          <FirstButton title="Histórico do dispositivo" />
+          <FirstButton title="Histórico do dispositivo"  />
         </FirstCard>
       </ScrollView>
     </View>

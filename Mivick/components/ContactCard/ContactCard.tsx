@@ -3,7 +3,7 @@ import { View, StyleProp, ViewStyle } from 'react-native';
 import { styles } from './styleContactCard';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
   customStyle?: StyleProp<ViewStyle>; 
   style?: StyleProp<ViewStyle>;       
 }
