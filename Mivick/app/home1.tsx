@@ -100,7 +100,7 @@ export default function HomeScreen() {
             <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." style={{ marginBottom: 20 ,textAlign: 'center'}} />
           </View>
           {/* Botão alinhado padrão */}
-          <FirstButton title="Histórico do dispositivo"  />
+          <FirstButton title="Histórico do dispositivo" onPress={() => router.push('/perfil')} />
         </FirstCard>
       </ScrollView>
     </View>

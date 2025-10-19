@@ -101,7 +101,7 @@ export default function CadastrarContato() {
                     style={styles.dropdown}
                 />
 
-                <FirstButton title="Cadastrar" customStyle={{ marginTop: 150, height: 50 }} />
+                <FirstButton title="Cadastrar" customStyle={{ marginTop: 110, height: 50 }} />
             </ScrollView>
         </View>
     );

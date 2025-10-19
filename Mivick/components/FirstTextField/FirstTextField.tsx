@@ -3,7 +3,7 @@ import { TextInput, TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { styles } from '../FirstTextField/styleTextField';
 
 interface Props extends TextInputProps {
-  placeholder: string;
+  placeholder?: string;
   style?: StyleProp<TextStyle>;
   maskTelefone?: boolean;
 }

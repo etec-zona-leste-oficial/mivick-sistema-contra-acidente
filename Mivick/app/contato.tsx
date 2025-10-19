@@ -88,16 +88,19 @@ export default function ContatoScreen() {
               </View>
             </View>
           </ContactCard>
-          
+
         ))}
         {/*Final*/}
-          
-          
+
+
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('/cadastrarContato')}
           customStyle={{ marginTop: 25 }}
+          icon={<FontAwesome name="plus" size={18} color="#fff" />}
         />
+
+
       </ScrollView>
     </View>
   );
