@@ -1,35 +1,36 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { styles } from './styleperfilFoto'
+import { styles } from './styleperfilFoto';
 
 interface ProfileFotoProps {
-  imageUri?: string; 
-  showEditIcon?: boolean; 
-  onEditPress?: () => void; 
-  size?: number; 
+  imageUri?: string;
+  showEditIcon?: boolean;
+  onEditPress?: () => void;
+  size?: number;
+  style?: StyleProp<ViewStyle>; 
 }
 
-export function ProfilePhoto({
+export function PerfilFoto({
   imageUri,
   showEditIcon = false,
   onEditPress,
   size = 100,
+  style, 
 }: ProfileFotoProps) {
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
-        
+    <View style={[styles.container, { width: size, height: size }, style]}>
       {/* Imagem do usuário */}
       <Image
         source={
           imageUri
             ? { uri: imageUri }
-            : require('../../assets/default-profile.png') // 🔸 imagem padrão
+            : require('../../assets/images/logo.png')
         }
         style={[styles.image, { width: size, height: size, borderRadius: size / 2 }]}
       />
 
-      
+    
       {showEditIcon && (
         <TouchableOpacity
           style={styles.editButton}

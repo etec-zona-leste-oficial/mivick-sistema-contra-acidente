@@ -5,7 +5,7 @@ import { styles } from './styleButton';
 
 interface Props {
   title: string;
-  onPress?: () => void; // agora é opcional para evitar erro quando não passar
+  onPress?: () => void;
   customStyle?: StyleProp<ViewStyle>;
   customTextStyle?: StyleProp<TextStyle>;
 }

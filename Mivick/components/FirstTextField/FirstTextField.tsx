@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { TextInput, TextInputProps } from 'react-native';
+import { TextInput, TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { styles } from '../FirstTextField/styleTextField';
 
 interface Props extends TextInputProps {
   placeholder: string;
-  style?: any;
+  style?: StyleProp<TextStyle>; 
 }
 
 export function FirstTextField({ placeholder, style, ...props }: Props) {
@@ -17,7 +17,7 @@ export function FirstTextField({ placeholder, style, ...props }: Props) {
       style={[
         styles.input,
         style,
-        { borderColor: isFocused ? '#F85200' : '#ccc', borderWidth: 2 }, // muda a borda
+        { borderColor: isFocused ? '#F85200' : '#ccc', borderWidth: 2 },
       ]}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
