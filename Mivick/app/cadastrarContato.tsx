@@ -14,11 +14,11 @@ export default function CadastrarContato() {
         <View style={{flex: 1}}>
              <HeaderComLogin />
             <ScrollView style={styles.container}>
-                 
-                 <FirstTitle text="Cadastre um contato" />  
+
+                 <FirstTitle text="Cadastre um contato" style={{fontSize: 35, marginBottom: 10, marginTop: 15, paddingHorizontal: 12 }} />
                          <View
                             style={{
-                            height: 2,          // espessura da linha
+                            height: 1,          // espessura da linha
                             backgroundColor: '#F85200', // cor laranja
                             width: '100%',       // comprimento da linha
                             alignSelf: 'center',
