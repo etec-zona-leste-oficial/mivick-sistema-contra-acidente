@@ -53,7 +53,9 @@ export default function HomeScreen() {
 
           <FirstSubTitle text = "Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer." style={{ marginBottom: 70, textAlign: 'center' }} />
 
-          <FirstButton title="Conectar dispositivo" />
+          <FirstButton title="Conectar dispositivo"
+            onPress={() => router.push('/ble-screen')} // 🔗 vai pra tela BLE 
+             />
         </FirstCard>
 
 
