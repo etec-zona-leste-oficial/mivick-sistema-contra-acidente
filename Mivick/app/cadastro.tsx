@@ -30,8 +30,8 @@ export default function Cadastro() {
 
         <FirstButton
           title="Cadastre-se"
-          onPress={() => console.log("Cadastro com dados")}
           customStyle={styles.signupButton}
+          onPress={() => console.log("Cadastro com dados")}
         />
 
         <View
