@@ -20,7 +20,7 @@ export default function ConectarDispositivo() {
   return (
     <View style={{ flex: 1, backgroundColor: "#1B1B1A" }}>
       <ScrollView>
-        <Header />
+        <Header/>
 
         <FirstTitle
           text="Como conectar?"
