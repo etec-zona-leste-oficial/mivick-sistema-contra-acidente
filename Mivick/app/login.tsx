@@ -1,16 +1,16 @@
 // Imports
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 // -------------------------
 
 // Componentes
-import { Header } from '@/components/Header';
-import { FirstTitle } from '@/components/FirstTitle';
-import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
+import { FirstTextField } from '@/components/FirstTextField';
+import { FirstTitle } from '@/components/FirstTitle';
+import { Header } from '@/components/Header';
 import { styles } from '../components/styles/styleLogin';
 
 
@@ -29,7 +29,7 @@ export default function Login() {
 
        
       <View style={styles.content}>
-        <FirstTitle text="Login"  />
+        <FirstTitle text="Login" fontSize={35} />
         <FirstTextField 
           placeholder="Nome" 
           style={[styles.textField, { marginTop: height * 0.06 }]} 
