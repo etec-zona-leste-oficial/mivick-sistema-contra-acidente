@@ -31,6 +31,7 @@ export default function ConfigurarDispositivo() {
                     }}
                 />
 
+                {/* --- Linha --- */}
                 <View
                     style={{
                         height: 1,
@@ -94,9 +95,39 @@ export default function ConfigurarDispositivo() {
                     </View>
                 </FirstCard>
 
+                {/* --- Linha --- */}
+                <View
+                    style={{
+                        height: 1,
+                        backgroundColor: "#F85200",
+                        width: "90%",
+                        alignSelf: "center",
+                        marginVertical: 12,
+                        marginBottom: 50,
+                    }}
+                />
+
                 {/* --- Opções do dispositivo --- */}
 
+                <View
+                    style={{
+                        alignSelf: 'center',
+                        marginTop: 50,
+                        marginBottom: 13,
+                        borderRadius: 80,
+                        borderWidth: 1,
+                        borderColor: '#F85200',
+                        padding: 3,
+                    }}
+                >  <FontAwesome
+                        name="wifi"
+                        size={40}
+                        color="#FF4500"
+                        style={{ marginRight: 8 }}
+                    /></View>
 
+
+                {/* --- Linha --- */}
                 <View
                     style={{
                         height: 1,
