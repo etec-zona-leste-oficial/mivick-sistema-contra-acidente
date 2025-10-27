@@ -46,7 +46,7 @@ export default function Login() {
 
         <FirstButton
           title="Login"
-          onPress={() => router.push('/home1')}
+          onPress={() => router.push('./Home')}
           customStyle={styles.loginButton}
         />
 

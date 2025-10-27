@@ -16,8 +16,8 @@ const { height, width } = Dimensions.get("window");
 
 const carouselImages = [
   require('../assets/images/primeira-bike1.jpg'),
-  require('../assets/images/segundo.webp'),
-  require('../assets/images/terceira.jpg')
+  require('../assets/images/primeira-bike1.jpg'),
+  require('../assets/images/primeira-bike1.jpg')
 ];
 
 export default function HomeScreen() {
@@ -54,6 +54,7 @@ export default function HomeScreen() {
           <FirstSubTitle text = "Para conectar, clique no botão abaixo e siga o passo a passo que irá aparecer." style={{ marginBottom: 70, textAlign: 'center' }} />
 
           <FirstButton title="Conectar dispositivo"
+          onPress={() => router.push('/ConectarDispositivo')}
             //onPress={() => router.push('/ble-screen')} // 🔗 vai pra tela BLE 
              />
         </FirstCard>
@@ -79,7 +80,7 @@ export default function HomeScreen() {
           <FirstSubTitle text= "Cadastre um contato para vê-lo aqui." />
           <FirstButton
             title="Cadastrar contato"
-            onPress={() => router.push('/cadastrarContato')}
+            onPress={() => router.push('./CadastrarContato')}
             customStyle={{width: width * 0.5,height: 50, marginTop: 50}}
           />
         </ContactCard>
@@ -102,7 +103,7 @@ export default function HomeScreen() {
             <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." style={{ marginBottom: 20 ,textAlign: 'center'}} />
           </View>
           {/* Botão alinhado padrão */}
-          <FirstButton title="Histórico do dispositivo" onPress={() => router.push('/perfil')} />
+          <FirstButton title="Histórico do dispositivo" onPress={() => router.push('./Perfil')} />
         </FirstCard>
       </ScrollView>
     </View>

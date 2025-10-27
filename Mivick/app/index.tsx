@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Text, View } from 'react-native';
 
 // Componentes ajustados
 import { FirstButton } from '@/components/FirstButton';
 import { FirstCarrousel } from '@/components/FirstCarrousel';
+import FontProvider from '../components/providers/FontProvider';
 import { styles } from '../components/styles/styleHome';
-import  FontProvider  from '../components/providers/FontProvider';
 
 // Imagens do carrossel
 const carouselImages = [
@@ -19,7 +19,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <FontProvider>
+   
       <View style={styles.container}>
         {/* Carrossel de fundo */}
         <FirstCarrousel images={carouselImages} />
@@ -40,18 +40,18 @@ export default function Home() {
         <View style={styles.bottomButtons}>
           <FirstButton
             title="Login"
-            onPress={() => router.push('/login')}
+            onPress={() => router.push('./Login')}
             customStyle={styles.loginButton}
             customTextStyle={[styles.loginButtonText, { fontFamily: 'SansBoldPro' }]}
           />
           <FirstButton
             title="Cadastro"
-            onPress={() => router.push('/cadastro')}
+            onPress={() => router.push('./Cadastro')}
             customStyle={styles.signupButton}
             customTextStyle={[styles.signupButtonText, { fontFamily: 'SansBoldPro' }]}
           />
         </View>
       </View>
-    </FontProvider>
+    
   );
 }

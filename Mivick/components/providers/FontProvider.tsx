@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 import { useFonts } from 'expo-font';
 
 interface FontProviderProps {
@@ -13,17 +13,17 @@ export default function FontProvider({ children }: FontProviderProps) {
 
   if (!fontsLoaded) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#F85200" />
+        <Text>Carregando fontes...</Text>
       </View>
     );
   }
 
-  return <>{children}</>;
+  // Garante que strings soltas sejam encapsuladas em <Text>
+  if (typeof children === 'string') {
+    return <Text>{children}</Text>;
+  }
+
+  return <View style={{ flex: 1 }}>{children}</View>;
 }

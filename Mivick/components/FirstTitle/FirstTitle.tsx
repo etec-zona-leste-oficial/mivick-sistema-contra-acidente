@@ -1,12 +1,11 @@
 import React from 'react';
-import { Text } from 'react-native';
-import { styles } from '../FirstTitle/styleTitle';
+import { Text, TextStyle } from 'react-native';
+import { styles } from './styleTitle';
 
 interface Props {
   text: string;
   fontSize?: number;
-  style?: object;
-
+  style?: TextStyle;
 }
 
 export function FirstTitle({ text, fontSize, style }: Props) {
