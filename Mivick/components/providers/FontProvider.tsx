@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
 import { useFonts } from 'expo-font';
+import React, { ReactNode } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 interface FontProviderProps {
   children?: ReactNode;

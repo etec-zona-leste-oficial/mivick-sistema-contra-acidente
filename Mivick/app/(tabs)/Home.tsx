@@ -3,21 +3,21 @@ import { View, ScrollView, Text, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
-import { FirstCard } from '../components/FirstCard/FirstCard';
-import { FirstTitle } from '../components/FirstTitle';
-import { FirstSubTitle } from '../components/FirstSubTitle';
-import { FirstButton } from '../components/FirstButton';
-import { FirstCarrousel } from '../components/FirstCarrousel/FirstCarrousel';
+import { FirstCard } from '../../components/FirstCard/FirstCard';
+import { FirstTitle } from '../../components/FirstTitle';
+import { FirstSubTitle } from '../../components/FirstSubTitle';
+import { FirstButton } from '../../components/FirstButton';
+import { FirstCarrousel } from '../../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
-import { styles } from '../components/styles/styleHome1';
+import { styles } from '../../components/styles/styleHome1';
 import { ContactCard } from '@/components/ContactCard/ContactCard';
 
 const { height, width } = Dimensions.get("window");
 
 const carouselImages = [
-  require('../assets/images/primeira-bike1.jpg'),
-  require('../assets/images/primeira-bike1.jpg'),
-  require('../assets/images/primeira-bike1.jpg')
+  require('../../assets/images/primeira-bike1.jpg'),
+  require('../../assets/images/primeira-bike1.jpg'),
+  require('../../assets/images/primeira-bike1.jpg')
 ];
 
 export default function HomeScreen() {
