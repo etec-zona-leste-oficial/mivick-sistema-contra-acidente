@@ -1,7 +1,7 @@
 // app/_layout.tsx
+import { Ionicons } from "@expo/vector-icons";
 import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function Layout() {
   return (
