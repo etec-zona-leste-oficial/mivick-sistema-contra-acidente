@@ -10,7 +10,7 @@ const { height } = Dimensions.get("window");
 
 export default function ConfigurarDispositivo() {
     return (
-        <View style={{ flex: 1, backgroundColor: "#1B1B1A" }}>
+        <View style={{ flex: 1, backgroundColor: "#000" }}>
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: height * 0.05 }}
@@ -43,7 +43,7 @@ export default function ConfigurarDispositivo() {
                     }}
                 />
 
-                {/* Card de Status do dispositivo */}
+
                 <FirstCard
                     customStyle={{
                         width: "100%",
@@ -111,20 +111,82 @@ export default function ConfigurarDispositivo() {
 
                 <View
                     style={{
-                        alignSelf: 'center',
-                        marginTop: 50,
-                        marginBottom: 13,
-                        borderRadius: 80,
-                        borderWidth: 1,
-                        borderColor: '#F85200',
-                        padding: 3,
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'flex-start',
+                        paddingHorizontal: 25,
+                        marginTop: -20,
+                        gap: 35,
                     }}
-                >  <FontAwesome
-                        name="wifi"
-                        size={40}
-                        color="#FF4500"
-                        style={{ marginRight: 8 }}
-                    /></View>
+                >
+                    {/* --- Conjunto 1 --- */}
+                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                        <View
+                            style={{
+                                width: 70,
+                                height: 70,
+                                borderRadius: 35,
+                                borderWidth: 2,
+                                borderColor: '#F85200',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <FontAwesome name="wifi" size={40} color="#FF4500" />
+                        </View>
+                        <FirstTitle
+                            text={"Conectar \ndispositivo"}
+                            fontSize={17}
+                            style={{ marginTop: 8, textAlign: 'center' }}
+                        />
+                    </View>
+
+                    {/* --- Conjunto 2 --- */}
+                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                        <View
+                            style={{
+                                width: 70,
+                                height: 70,
+                                borderRadius: 35,
+                                borderWidth: 2,
+                                borderColor: '#F85200',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <FontAwesome name="bluetooth" size={40} color="#FF4500" />
+                        </View>
+                        <FirstTitle
+                            text={"Desligar \nsensores"}
+                            fontSize={17}
+                            style={{ marginTop: 8, textAlign: 'center' }}
+                        />
+                    </View>
+
+                    {/* --- Conjunto 3 --- */}
+                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                        <View
+                            style={{
+                                width: 70,
+                                height: 70,
+                                borderRadius: 35,
+                                borderWidth: 2,
+                                borderColor: '#F85200',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <FontAwesome name="power-off" size={40} color="#FF4500" />
+                        </View>
+                        <FirstTitle
+                            text={"Desligar \ndispositivo"}
+                            fontSize={17}
+                            style={{ marginTop: 8, textAlign: 'center' }}
+                        />
+                    </View>
+                </View>
+
+
 
 
                 {/* --- Linha --- */}
@@ -135,12 +197,80 @@ export default function ConfigurarDispositivo() {
                         width: "90%",
                         alignSelf: "center",
                         marginVertical: 12,
-                        marginBottom: 50,
+                        marginBottom: 25,
                     }}
                 />
 
 
                 {/* --- Histórico --- */}
+                <FirstTitle text="Histórico:" fontSize={34} style={{ paddingHorizontal: 20 }} />
+
+
+                <FirstCard customStyle={{ borderRadius: 0, marginTop: 10, padding: 15 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                        {/* Ícone à esquerda */}
+                        <View
+                            style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 35,
+                                borderWidth: 2,
+                                borderColor: '#F85200',
+                                backgroundColor: '#F85200',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <FontAwesome name="bluetooth" size={37} color="#2D2D2D" />
+                        </View>
+
+                      
+                        <View style={{ flex: 1 }}>
+                          
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <FirstTitle text="Alerta de sensor de distância" fontSize={20} />
+                                <FirstSubTitle text="16/06" />
+                            </View>
+
+
+                            <FirstSubTitle text={"Alerta de distância registrado, clique para \nmais informações"} style={{ marginTop: 3 }} />
+                        </View>
+                    </View>
+                </FirstCard>
+
+
+                <FirstCard customStyle={{ borderRadius: 0, marginTop: 10, padding: 15 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                       
+                        <View
+                            style={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: 35,
+                                borderWidth: 2,
+                                borderColor: '#F85200',
+                                backgroundColor: '#F85200',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <FontAwesome name="warning" size={37} color="#2D2D2D" />
+                        </View>
+
+                       
+                        <View style={{ flex: 1 }}>
+                            
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <FirstTitle text="Alerta de possível acidente" fontSize={20} />
+                                <FirstSubTitle text="16/06"  />
+                            </View>
+
+                           
+                            <FirstSubTitle text={"Alerta de um possível acidente registrado, \nclique para mais informações"} style={{ marginTop: 3 }} />
+                        </View>
+                    </View>
+                </FirstCard>
+
             </ScrollView>
         </View>
     );
