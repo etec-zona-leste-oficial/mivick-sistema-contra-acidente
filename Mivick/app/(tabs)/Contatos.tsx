@@ -3,10 +3,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, ScrollView, View } from 'react-native';
-import { FirstButton } from '../components/FirstButton';
-import { FirstTitle } from '../components/FirstTitle';
-import { HeaderComLogin } from '../components/HeaderComLogin';
-import { styles } from '../components/styles/styleContato';
+import { FirstButton } from '../../components/FirstButton';
+import { FirstTitle } from '../../components/FirstTitle';
+import { HeaderComLogin } from '../../components/HeaderComLogin';
+import { styles } from '../../components/styles/styleContato';
 
 export default function ContatoScreen() {
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function ContatoScreen() {
 
         <FirstButton
           title="Adicionar Contato"
-          onPress={() => router.push('/CadastrarContato')}
+          onPress={() => router.push('./CadastrarContato')}
           customStyle={{ marginTop: 25 }}
           icon={<FontAwesome name="plus" size={18} color="#fff" />}
         />

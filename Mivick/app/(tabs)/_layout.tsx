@@ -47,9 +47,9 @@ export default function TabsLayout() {
 
         {/* Aba Histórico */}
         <Tabs.Screen
-          name="HistoricoAlerta"
+          name="Contatos"
           options={{
-            title: 'Histórico',
+            title: 'Contatos',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="alert-circle-outline" color={color} size={size} />
             ),
