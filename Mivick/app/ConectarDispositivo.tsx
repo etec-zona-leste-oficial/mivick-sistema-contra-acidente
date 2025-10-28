@@ -19,7 +19,7 @@ export default function ConectarDispositivo() {
   const closeModal = () => setModalVisible(false);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#1B1B1A" }}>
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
       <ScrollView>
         <HeaderComLogin />
 

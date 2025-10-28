@@ -24,7 +24,7 @@ export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: height * 0.05 }}
