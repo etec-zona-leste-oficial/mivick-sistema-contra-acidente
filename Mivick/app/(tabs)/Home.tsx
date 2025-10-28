@@ -97,7 +97,7 @@ export default function HomeScreen() {
         />
 
         {/* Histórico */}
-        <FirstCard customStyle={{ borderRadius: 0 }}>
+        <FirstCard customStyle={{ borderRadius: 0, }}>
           <View style={{ alignItems: 'center', marginBottom: '10%' }}>
             <FirstTitle text="Verifique seu histórico" fontSize={26} style={{ marginBottom: 20}}/>
             <FirstSubTitle text="Confira seu histórico de corridas, vias e ruas em que passou, zonas de perigo e etc." style={{ marginBottom: 20 ,textAlign: 'center'}} />
