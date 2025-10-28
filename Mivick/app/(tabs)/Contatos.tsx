@@ -7,6 +7,7 @@ import { FirstButton } from '../../components/FirstButton';
 import { FirstTitle } from '../../components/FirstTitle';
 import { HeaderComLogin } from '../../components/HeaderComLogin';
 import { styles } from '../../components/styles/styleContato';
+import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 
 export default function ContatoScreen() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function ContatoScreen() {
           }}
         />
 
-        {/*Começo*/}
+        {/* --- Lista de contatos --- */}
         {contacts.map((contact) => (
           <ContactCard
             key={contact.id}
@@ -58,8 +59,16 @@ export default function ContatoScreen() {
               paddingHorizontal: 15,
             }}
           >
-            <FirstTitle text={contact.name} fontSize={23} />
+            {/* Área esquerda: Foto + Nome */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <PerfilFoto
+                size={50} // tamanho menor para caber no card
+                style={{ borderRadius: 25 }}
+              />
+              <FirstTitle text={contact.name} fontSize={23} />
+            </View>
 
+            {/* Área direita: Botões de ação */}
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View
                 style={{
@@ -88,19 +97,15 @@ export default function ContatoScreen() {
               </View>
             </View>
           </ContactCard>
-
         ))}
-        {/*Final*/}
 
-
+        {/* --- Botão para adicionar novo contato --- */}
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('./CadastrarContato')}
           customStyle={{ marginTop: 25 }}
           icon={<FontAwesome name="plus" size={18} color="#fff" />}
         />
-
-
       </ScrollView>
     </View>
   );

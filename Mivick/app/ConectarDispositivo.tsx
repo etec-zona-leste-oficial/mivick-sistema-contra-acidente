@@ -1,7 +1,7 @@
 // screens/ConectarDispositivo.tsx
 import { FirstButton } from "@/components/FirstButton";
 import { FirstCard } from "@/components/FirstCard/FirstCard";
-import { FirstModal } from "@/components/FirstModal"; 
+import { FirstModal } from "@/components/FirstModal";
 import { FirstTitle } from "@/components/FirstTitle";
 import { Header } from "@/components/Header";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
@@ -11,17 +11,17 @@ import { Dimensions, Image, ScrollView, View } from "react-native";
 const { height } = Dimensions.get("window");
 
 export default function ConectarDispositivo() {
- 
+
   const [modalVisible, setModalVisible] = useState(false);
 
- 
+
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#1B1B1A" }}>
       <ScrollView>
-        <HeaderComLogin/>
+        <HeaderComLogin />
 
         <FirstTitle
           text="Como conectar?"
@@ -40,16 +40,17 @@ export default function ConectarDispositivo() {
           }}
         />
 
-        <Image
-          //source={require('@/assets/images/pareamento.png')}
-          style={{
-            width: "100%",
-            height: height * 0.4,
-            marginBottom: 50,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        />
+        <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 40 }}>
+          <Image
+            source={require('@/assets/images/pareamento.png')}
+            style={{
+              width: 179,
+              height: 179,
+              resizeMode: 'contain', // mantém proporção da imagem
+            }}
+          />
+        </View>
+
 
         <FirstCard
           customStyle={{
@@ -57,7 +58,7 @@ export default function ConectarDispositivo() {
             height: height * 0.18,
             alignSelf: "center",
             paddingHorizontal: 16,
-            marginTop: -200,
+            marginTop: -2,
             alignItems: "center",
             borderRadius: 0,
             elevation: 0,
@@ -82,7 +83,7 @@ export default function ConectarDispositivo() {
           }}
         />
 
-      
+
         <FirstButton
           title="Parear"
           onPress={openModal}
@@ -95,7 +96,7 @@ export default function ConectarDispositivo() {
         />
       </ScrollView>
 
-      
+
       <FirstModal visible={modalVisible} onClose={closeModal} />
     </View>
   );

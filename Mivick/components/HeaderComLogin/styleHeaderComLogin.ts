@@ -5,7 +5,7 @@ const { width, height } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     height: height * 0.11,
     paddingHorizontal: width * 0.04,

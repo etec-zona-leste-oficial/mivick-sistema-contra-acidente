@@ -1,42 +1,36 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-
 import { FirstTextField } from '@/components/FirstTextField/FirstTextField';
 import { FirstSubTitle } from '@/components/FirstSubTitle';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 import { styles } from '@/components/styles/stylePerfil';
 
 export default function Perfil() {
-    const router = useRouter();
-
-    const campos: { label: string; icon: 'pencil' }[] = [
-        { label: 'Nome', icon: 'pencil' },
-        { label: 'Telefone', icon: 'pencil' },
-        { label: 'Email', icon: 'pencil' },
+    const campos: { label: string; icon: keyof typeof FontAwesome.glyphMap }[] = [
+        { label: 'Nome', icon: 'user' },
+        { label: 'Telefone', icon: 'phone' },
+        { label: 'Email', icon: 'envelope' },
     ];
-
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-
+            {/* FOTO DE PERFIL */}
             <View
                 style={{
                     alignSelf: 'center',
                     marginTop: 70,
                     marginBottom: 13,
-                    borderRadius: 80,        
-                    borderWidth: 3,           
-                    borderColor: '#F85200',   
-                    padding: 3,               
+                    borderRadius: 80,
+                    borderWidth: 3,
+                    borderColor: '#F85200',
+                    padding: 3,
                 }}
             >
-                <PerfilFoto style={{ width: 100, height: 100 }} showEditIcon={true}/>
+                <PerfilFoto style={{ width: 100, height: 100 }} showEditIcon={true} />
             </View>
 
-
-
+            {/* TEXTO "EDITAR" */}
             <FirstSubTitle
                 text="Editar"
                 style={{
@@ -47,7 +41,7 @@ export default function Perfil() {
                 }}
             />
 
-
+            {/* LINHA DE SEPARAÇÃO */}
             <View
                 style={{
                     height: 2,
@@ -59,7 +53,7 @@ export default function Perfil() {
                 }}
             />
 
-
+            {/* CAMPOS */}
             {campos.map((campo, index) => (
                 <View
                     key={index}
@@ -69,21 +63,27 @@ export default function Perfil() {
                         marginBottom: 40,
                     }}
                 >
-
+                    {/* RÓTULO (título acima do campo) */}
                     <View
                         style={{
                             position: 'absolute',
                             top: -10,
                             left: 45,
-                            backgroundColor: '#1B1B1A',
+                            backgroundColor: '#000',
                             paddingHorizontal: 5,
                             zIndex: 1,
                         }}
                     >
-                        <FirstSubTitle text={campo.label} style={{ fontSize: 14, color: '#F85200' }} />
+                        <FirstSubTitle
+                            text={campo.label}
+                            style={{
+                                fontSize: 14,
+                                color: '#fff', // texto branco
+                            }}
+                        />
                     </View>
 
-
+                    {/* CAMPO DE TEXTO */}
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <FontAwesome
                             name={campo.icon}
@@ -94,14 +94,15 @@ export default function Perfil() {
                         <FirstTextField
                             style={{
                                 flex: 1,
-                                backgroundColor: '#1B1B1A',
+                                backgroundColor: 'transparent', // fundo transparente
                                 borderColor: '#F85200',
                                 borderWidth: 2,
-                                color: '#fff',
+                                color: '#fff', // texto branco
                                 height: 45,
                                 paddingHorizontal: 10,
                                 paddingVertical: 8,
                             }}
+                            placeholderTextColor="#ccc" // cor do placeholder mais suave
                         />
                     </View>
                 </View>
