@@ -14,7 +14,7 @@ export function HeaderComLogin() {
     <View style={styles.header}>
       {/* Logo + Nome */}
       <View style={styles.logoContainer}>
-        <TouchableOpacity onPress={() => router.push("/home1")}>
+        <TouchableOpacity onPress={() => router.push("./Home")}>
           <Logo />
         </TouchableOpacity>
       </View>

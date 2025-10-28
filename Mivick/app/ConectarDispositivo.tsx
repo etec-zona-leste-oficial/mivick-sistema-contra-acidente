@@ -4,6 +4,7 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstModal } from "@/components/FirstModal"; 
 import { FirstTitle } from "@/components/FirstTitle";
 import { Header } from "@/components/Header";
+import { HeaderComLogin } from "@/components/HeaderComLogin";
 import React, { useState } from "react";
 import { Dimensions, Image, ScrollView, View } from "react-native";
 
@@ -20,7 +21,7 @@ export default function ConectarDispositivo() {
   return (
     <View style={{ flex: 1, backgroundColor: "#1B1B1A" }}>
       <ScrollView>
-        <Header/>
+        <HeaderComLogin/>
 
         <FirstTitle
           text="Como conectar?"
