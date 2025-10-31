@@ -27,7 +27,7 @@ export default function HomeScreen() {
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: height * 0.05 }}
+        contentContainerStyle={{ paddingBottom: height * 0.10 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header dentro do ScrollView */}
@@ -39,8 +39,8 @@ export default function HomeScreen() {
         </View>
 
         {/* Dispositivos Conectados */}
-        <View style={{ marginTop: height * 0.03, paddingHorizontal: 12 }}>
-          <FirstTitle text="Dispositivos Conectados" fontSize={28}/>
+        <View style={{ marginTop: height * 0.03, paddingHorizontal: 14 }}>
+          <FirstTitle text="Dispositivos Conectados" fontSize={width * 0.07}/>
           <FirstSubTitle text="Para começar, conecte um dispositivo Mivick." />
         </View>
 
