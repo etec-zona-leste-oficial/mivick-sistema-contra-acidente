@@ -19,28 +19,37 @@ export default function ContatoScreen() {
     { id: 3, name: 'Contato 3' },
   ];
 
+  // Escalas baseadas na tela
+  const scale = width / 375; // base iPhone X
+  const fontScale = Math.min(scale * 1.1, 1.3);
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
       <HeaderComLogin />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={[styles.container, { paddingHorizontal: width * 0.04 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* --- Título --- */}
         <FirstTitle
           text="Contatos"
           style={{
-            fontSize: 35,
-            marginBottom: 10,
-            marginTop: 15,
-            paddingHorizontal: 12,
+            fontSize: 30 * fontScale,
+            marginBottom: height * 0.012,
+            marginTop: height * 0.02,
+            alignSelf: 'flex-start',
           }}
         />
 
+        {/* --- Linha separadora --- */}
         <View
           style={{
             height: 2,
             backgroundColor: '#F85200',
-            width: '107%',
+            width: '110%',
             alignSelf: 'center',
-            marginVertical: 12,
-            marginBottom: 30,
+            marginVertical: height * 0.015,
+            marginBottom: height * 0.035,
           }}
         />
 
@@ -49,51 +58,66 @@ export default function ContatoScreen() {
           <ContactCard
             key={contact.id}
             style={{
-              marginBottom: 15,
-              height: height * 0.1,
-              width: width * 0.95,
-              borderRadius: 5,
+              marginBottom: height * 0.02,
+              height: height * 0.1    ,
+              width: width * 0.90,
+              borderRadius: width * 0.02,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingHorizontal: 15,
+              paddingHorizontal: width * 0.04,
+              alignSelf: 'center',
             }}
           >
-            {/* Área esquerda: Foto + Nome */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            {/* --- Área esquerda: Foto + Nome --- */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: width * 0.03,
+              }}
+            >
               <PerfilFoto
-                size={50} // tamanho menor para caber no card
-                style={{ borderRadius: 25 }}
+                size={width * 0.13} // tamanho dinâmico
+                style={{ borderRadius: (width * 0.13) / 2 }}
               />
-              <FirstTitle text={contact.name} fontSize={23} />
+              <FirstTitle text={contact.name} fontSize={20 * fontScale} />
             </View>
 
-            {/* Área direita: Botões de ação */}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            {/* --- Área direita: Botões --- */}
+            <View style={{ flexDirection: 'row', gap: width * 0.03 }}>
               <View
                 style={{
                   backgroundColor: '#F85200',
-                  width: 42,
-                  height: 42,
-                  borderRadius: 21,
+                  width: width * 0.11,
+                  height: width * 0.11,
+                  borderRadius: (width * 0.11) / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <FontAwesome name="pencil" size={18} color="#fff" />
+                <FontAwesome
+                  name="pencil"
+                  size={width * 0.045}
+                  color="#fff"
+                />
               </View>
 
               <View
                 style={{
                   backgroundColor: '#F85200',
-                  width: 42,
-                  height: 42,
-                  borderRadius: 21,
+                  width: width * 0.11,
+                  height: width * 0.11,
+                  borderRadius: (width * 0.11) / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <FontAwesome name="close" size={22} color="#fff" />
+                <FontAwesome
+                  name="close"
+                  size={width * 0.05}
+                  color="#fff"
+                />
               </View>
             </View>
           </ContactCard>
@@ -103,8 +127,13 @@ export default function ContatoScreen() {
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('./CadastrarContato')}
-          customStyle={{ marginTop: 25 }}
-          icon={<FontAwesome name="plus" size={18} color="#fff" />}
+          customStyle={{
+            marginTop: height * 0.03,
+            marginBottom: height * 0.04,
+            alignSelf: 'center',
+            width: width * 0.85,
+          }}
+          icon={<FontAwesome name="plus" size={width * 0.045} color="#fff" />}
         />
       </ScrollView>
     </View>

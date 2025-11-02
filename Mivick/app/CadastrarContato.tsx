@@ -9,6 +9,10 @@ import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { styles } from '../components/styles/styleCadastrarContato';
 import { FontAwesome } from '@expo/vector-icons';
+import { Dimensions } from 'react-native';
+
+
+const {width, height} = Dimensions.get('window');
 
 export default function CadastrarContato() {
     const [nome, setNome] = useState('');
@@ -101,7 +105,11 @@ export default function CadastrarContato() {
                     style={styles.dropdown}
                 />
 
-                <FirstButton title="Cadastrar" customStyle={{ marginTop: 110, height: 50 }} />
+                <FirstButton title="Cadastrar" customStyle={{ marginTop: height * 0.12,
+                    height: height * 0.065,
+                    width: width * 0.9,
+                    alignSelf: 'center',
+                }} />
             </ScrollView>
         </View>
     );
