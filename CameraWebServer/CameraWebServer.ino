@@ -166,31 +166,7 @@ void setup() {
   Wire.begin(MPU_SDA, MPU_SCL);
   startCamera();
 
-  // Wi-Fi
-  WiFi.begin(ssid, password);
-  Serial.print("Conectando Wi-Fi");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println("\n✅ Wi-Fi conectado! IP: " + WiFi.localIP().toString());
-
-  // WebSocket
-  ws.onEvent([](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
-    if(type == WS_EVT_CONNECT){
-      Serial.println("📡 Cliente WebSocket conectado");
-    } else if(type == WS_EVT_DISCONNECT){
-      Serial.println("❌ Cliente WebSocket desconectado");
-    }
-  });
-  server.addHandler(&ws);
-  server.begin();
-
-  // Ultrassônico
-  pinMode(TRIG_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-
-  // BLE
+  // ===== BLE =====
   NimBLEDevice::init("ESP32-CAM-BLE");
   pServer = NimBLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -207,8 +183,49 @@ void setup() {
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->start();
 
-  Serial.println("🚀 Setup completo!");
+  Serial.println("🚀 BLE iniciado! Aguardando conexão do app...");
+
+  // ===== AGUARDAR CONEXÃO BLE =====
+  while (!deviceConnected) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("\n🔗 Cliente BLE conectado! Tentando Wi-Fi...");
+
+  // ===== CONECTAR AO WI-FI (timeout de 15 segundos) =====
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando Wi-Fi");
+
+  unsigned long startAttemptTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 15000) {
+    Serial.print(".");
+    delay(500);
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n✅ Wi-Fi conectado! IP: " + WiFi.localIP().toString());
+  } else {
+    Serial.println("\n❌ Falha ao conectar ao Wi-Fi (timeout de 15s)");
+  }
+
+  // ===== SERVIDOR WEBSOCKET =====
+  ws.onEvent([](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+    if(type == WS_EVT_CONNECT){
+      Serial.println("📡 Cliente WebSocket conectado");
+    } else if(type == WS_EVT_DISCONNECT){
+      Serial.println("❌ Cliente WebSocket desconectado");
+    }
+  });
+  server.addHandler(&ws);
+  server.begin();
+
+  // ===== ULTRASSÔNICO =====
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  Serial.println("✅ Setup completo!");
 }
+
 
 // ================== LOOP ==================
 void loop() {
