@@ -35,7 +35,7 @@ export const styles = StyleSheet.create({
 
   loginButton: {
     backgroundColor: '#F85200',
-    marginTop: height * 0.03, // reduz espaço entre ForgotPassword e botão
+    marginTop: height * 0.04,  
     marginBottom: height * 0.015,
     width: '100%',
     height: height * 0.07,

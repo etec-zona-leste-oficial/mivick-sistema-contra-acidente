@@ -5,98 +5,163 @@ import { HeaderComLogin } from "@/components/HeaderComLogin";
 import React from "react";
 import { Dimensions, Image, ScrollView, View } from "react-native";
 
-const { height } = Dimensions.get("window");
-
+const { width, height } = Dimensions.get("window");
 
 export default function HistoricoAlerta() {
-    return (
-        <View style={{ flex: 1, backgroundColor: '#000' }}>
-            <ScrollView>
-                <HeaderComLogin />
+  return (
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: height * 0.05,
+        }}
+      >
+        <HeaderComLogin />
 
+        {/* Título principal */}
+        <FirstTitle
+          text="Histórico do alerta"
+          fontSize={Math.min(width * 0.08, 32)} 
+          style={{
+            paddingHorizontal: width * 0.06,
+            marginTop: height * 0.03,
+            marginBottom: height * 0.025
+          }}
+        />
 
-                <FirstTitle text="Histórico do alerta" fontSize={32} style={{ paddingHorizontal: 25, marginTop: 24 }} />
+        {/* Linha divisória */}
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "100%",
+            alignSelf: "center",
+            marginVertical: height * 0.00,
+            
+          }}
+        />
 
-                <View
-                    style={{
-                        height: 1,
-                        backgroundColor: "#F85200",
-                        width: "106%",
-                        alignSelf: "center",
-                        marginVertical: 20,
-                        marginBottom: 0,
-                    }}
-                />
+        {/* Imagem */}
+        <Image
+          source={require("@/assets/images/terceira.jpg")}
+          style={{
+            width: "100%",
+            height: height * 0.25,
+            marginBottom: -height * 0.010,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          resizeMode="cover"
+        />
 
-                <Image
-                    source={require('@/assets/images/terceira.jpg')}
-                    style={{
-                        width: "106%",
-                        height: height * 0.25,
-                        marginBottom: -12,
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}
-                />
+        {/* Card */}
+        <FirstCard
+          customStyle={{
+            width: "100%",
+            borderRadius: 0,
+            paddingVertical: height * 0.02,
+            paddingHorizontal: width * 0.05,
+          }}
+        >
+          {/* Texto acima da imagem */}
+          <View
+            style={{
+              borderRadius: 6,
+              borderWidth: 1,
+              borderColor: "#F85200",
+              marginTop: height * 0.01,
+              width: width * 0.60, 
+              height: height * 0.035, 
+              justifyContent: "center",
+              alignSelf: "center",
+              marginBottom: height * 0.015,
+            }}
+          >
+            <FirstSubTitle
+              text="Foto tirada no momento do alerta"
+              style={{
+                textAlign: "center",
+                includeFontPadding: false,
+                textAlignVertical: "center",
+                fontSize: Math.min(width * 0.035, 15),
+                lineHeight: Math.min(width * 0.04, 17),
+              }}
+            />
+          </View>
 
-                <FirstCard customStyle={{ width: '106%', borderRadius: 0, }}>
-                    <View
-                        style={{
-                            borderRadius: 0,
-                            borderWidth: 1,
-                            borderColor: '#F85200',
-                            marginTop: 1,
-                            width: 210,
-                            height: 22, 
-                            justifyContent: 'center', 
-                            alignSelf: 'center',
-                            marginBottom: 10      
-                        }}
-                    >
-                        <FirstSubTitle
-                            text="Foto tirada no momento do alerta"
-                            style={{
-                                textAlign: 'center',
-                                includeFontPadding: false, 
-                                textAlignVertical: 'center', 
-                                lineHeight: 18, 
-                                
-                            }}
-                        />
-                    </View>
+          {/* Sensor Ativado */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: height * 0.012,
+              paddingHorizontal: width * 0.05,
+            }}
+          >
+            <FirstTitle
+              text="Sensor Ativado: "
+              fontSize={Math.min(width * 0.05, 20)}
+            />
+            <FirstSubTitle
+              text="Sensor de distância"
+              style={{
+                fontSize: Math.min(width * 0.04, 16),
+                color: "#D9D9D9",
+              }}
+            />
+          </View>
 
-                    {/* Nível de bateria */}
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10, paddingHorizontal: 20, marginTop: 10 }}>
-                        <FirstTitle text="Sensor Ativado: " fontSize={20} />
-                        <FirstSubTitle text="Sensor de distãncia" />
-                    </View>
+          {/* Data */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: height * 0.012,
+              paddingHorizontal: width * 0.05,
+            }}
+          >
+            <FirstTitle text="Data: " fontSize={Math.min(width * 0.05, 20)} />
+            <FirstSubTitle
+              text="16/06/2025"
+              style={{
+                fontSize: Math.min(width * 0.04, 16),
+                color: "#D9D9D9",
+              }}
+            />
+          </View>
 
-                    {/* Dispositivo */}
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10, paddingHorizontal: 20, }}>
-                        <FirstTitle text="Data: " fontSize={20} />
-                        <FirstSubTitle text="16/16/2025" />
-                    </View>
+          {/* Situação */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: height * 0.012,
+              paddingHorizontal: width * 0.05,
+            }}
+          >
+            <FirstTitle text="Situação: " fontSize={Math.min(width * 0.05, 20)} />
+            <FirstSubTitle
+              text="Alerta desligado"
+              style={{
+                fontSize: Math.min(width * 0.04, 16),
+                color: "#D9D9D9",
+              }}
+            />
+          </View>
+        </FirstCard>
 
-                    {/* Sensores */}
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10, paddingHorizontal: 20, }}>
-                        <FirstTitle text="Situação: " fontSize={20} />
-                        <FirstSubTitle text="Alerta desligado" />
-                    </View>
-                </FirstCard>
+        {/* Linha final */}
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "85%",
+            alignSelf: "center",
+            marginTop: -height * 0.015, 
 
-                    <View
-                    style={{
-                        height: 1,
-                        backgroundColor: "#F85200",
-                        width: "85%",
-                        alignSelf: "center",
-                        marginVertical: -12,
-                        marginBottom: 0,
-                    }}
-                />
-
-
-            </ScrollView>
-        </View>
-    )
+            
+          }}
+        />
+      </ScrollView>
+    </View>
+  );
 }

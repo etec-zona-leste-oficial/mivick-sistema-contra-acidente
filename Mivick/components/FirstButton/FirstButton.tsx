@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, StyleProp, ViewStyle, TextStyle, View } from 'r
 import { styles } from './styleButton';
 
 interface Props {
-  title: string | React.ReactNode;  // aceita string ou JSX
+  title: string | React.ReactNode;  
   onPress?: () => void;
   customStyle?: StyleProp<ViewStyle>;
   customTextStyle?: StyleProp<TextStyle>;
@@ -20,7 +20,7 @@ export function FirstButton({ title, onPress, customStyle, customTextStyle, icon
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         {icon && icon}
 
-        {/* Renderiza string dentro de <Text> ou JSX diretamente */}
+        
         {title !== null && title !== undefined && (
           typeof title === 'string' ? (
             <Text style={[styles.text, customTextStyle]}>{title}</Text>
