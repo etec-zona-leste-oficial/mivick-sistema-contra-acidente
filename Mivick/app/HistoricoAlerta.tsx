@@ -2,12 +2,29 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Dimensions, Image, ScrollView, View } from "react-native";
+import { useBle } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
 
 const { width, height } = Dimensions.get("window");
 
 export default function HistoricoAlerta() {
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+
+useEffect(() => {
+  const socket = new WebSocket("ws://192.168.1.10:80/ws");
+
+  socket.onopen = () => console.log("🌐 Conectado ao ESP32 via WebSocket");
+  socket.onmessage = (event) => {
+    const base64Image = event.data as string;
+    setImageBase64(`data:image/jpeg;base64,${base64Image}`);
+  };
+  socket.onerror = (err) => console.error("❌ Erro WebSocket:", err);
+  socket.onclose = () => console.log("⚠️ Conexão encerrada");
+
+  return () => socket.close();
+}, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <ScrollView
@@ -41,17 +58,22 @@ export default function HistoricoAlerta() {
         />
 
         {/* Imagem */}
-        <Image
-          source={require("@/assets/images/terceira.jpg")}
-          style={{
-            width: "100%",
-            height: height * 0.25,
-            marginBottom: -height * 0.010,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          resizeMode="cover"
-        />
+       <Image
+  source={
+    imageBase64
+      ? { uri: imageBase64 }
+      : require("@/assets/images/terceira.jpg")
+  }
+  style={{
+    width: "100%",
+    height: height * 0.25,
+    marginBottom: -height * 0.010,
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+  resizeMode="cover"
+/>
+
 
         {/* Card */}
         <FirstCard

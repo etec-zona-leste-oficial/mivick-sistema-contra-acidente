@@ -8,9 +8,10 @@ import { styles } from "./stylefirstModal";
 interface FirstModalProps {
     visible: boolean;
     onClose: () => void;
+     children?: React.ReactNode; // 👈 adicione esta linha
 }
 
-export const FirstModal: React.FC<FirstModalProps> = ({ visible, onClose }) => {
+export const FirstModal: React.FC<FirstModalProps> = ({ visible, onClose,children }) => {
 
     const dot1 = useRef(new Animated.Value(1)).current;
     const dot2 = useRef(new Animated.Value(0.5)).current;
@@ -95,6 +96,7 @@ export const FirstModal: React.FC<FirstModalProps> = ({ visible, onClose }) => {
                 <View style={styles.devicesContainer}>
                     <Text style={styles.devicesPlaceholder}>Nenhum dispositivo encontrado ainda...</Text>
                 </View>
+                {children}
             </View>
         </Modal>
     );
