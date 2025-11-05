@@ -1,16 +1,43 @@
 import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
+import { FirstButton } from "@/components/FirstButton";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
+import { Alert } from "react-native";
 import { Dimensions, ScrollView, View, Pressable } from "react-native";
+import { BleManager, Device } from "react-native-ble-plx";
+import { Buffer } from "buffer";
+import { useBle } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
+
+const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
+const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
 
 const { width, height } = Dimensions.get("window");
 
 export default function ConfigurarDispositivo() {
   const router = useRouter();
+const { manager, device, setDevice, connected, setConnected } = useBle();
+
+
+async function enviarComando(cmd: string) {
+  if (!device || !connected) {
+    Alert.alert("Aviso", "Dispositivo BLE não conectado.");
+    return;
+  }
+  try {
+    await device.writeCharacteristicWithResponseForService(
+      SERVICE_UUID,
+      CHARACTERISTIC_UUID,
+      Buffer.from(cmd, "utf-8").toString("base64")
+    );
+    Alert.alert("Comando enviado", cmd);
+  } catch (e) {
+    Alert.alert("Erro", "Falha ao enviar comando.");
+  }
+}
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
@@ -136,7 +163,38 @@ export default function ConfigurarDispositivo() {
                 color: "#D9D9D9",
               }}
             />
+            
           </View>
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+  <FirstButton
+    title="Ligar Sensores"
+    onPress={() => enviarComando("ON")}
+    customStyle={{
+      marginVertical: 10,
+      width: "85%",
+      alignSelf: "center",
+    }}
+  />
+  <FirstButton
+    title="Desligar Sensores"
+    onPress={() => enviarComando("OFF")}
+    customStyle={{
+      marginVertical: 10,
+      width: "85%",
+      alignSelf: "center",
+    }}
+  />
+  <FirstButton
+    title="Desconectar"
+    onPress={() => enviarComando("DISCONNECT")}
+    customStyle={{
+      marginVertical: 10,
+      width: "85%",
+      alignSelf: "center",
+    }}
+  />
+</View>
+
         </FirstCard>
 
         {/* --- Linha --- */}
