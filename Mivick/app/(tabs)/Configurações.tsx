@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert } from "react-native";
 import { Dimensions, ScrollView, View, Pressable } from "react-native";
-import { BleManager, Device } from "react-native-ble-plx";
+import { Device } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 import { useBle } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
 
