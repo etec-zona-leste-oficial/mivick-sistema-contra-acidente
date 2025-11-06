@@ -10,7 +10,7 @@ import { FirstButton } from '../../components/FirstButton';
 import { FirstCarrousel } from '../../components/FirstCarrousel/FirstCarrousel';
 import { HeaderComLogin } from '@/components/HeaderComLogin/HeaderComLogin';
 import { ContactCard } from '@/components/ContactCard/ContactCard';
-import { BleProvider } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
+
 const { height, width } = Dimensions.get("window");
 
 const carouselImages = [
@@ -37,7 +37,7 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <HeaderComLogin />
-        <BleProvider> 
+       
         {/* Carrossel */}
         <View style={{ height: height * 0.22, width: '100%' }}>
           <FirstCarrousel images={carouselImages} style={{ flex: 1 }} />
@@ -65,7 +65,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/ConectarDispositivo')}
           />
         </FirstCard>
- </BleProvider>
+
         <View
           style={{
             height: 2,

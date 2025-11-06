@@ -1,8 +1,8 @@
 // screens/ConectarDispositivo.tsx
 import React, { useState, useEffect } from "react";
 import { View, Image, ScrollView, Dimensions, Alert, Text } from "react-native";
-import { Device } from "react-native-ble-plx";
 import { Buffer } from "buffer";
+import { Device } from "react-native-ble-plx";
 import { FirstButton } from "@/components/FirstButton";
 import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstModal } from "@/components/FirstModal";
