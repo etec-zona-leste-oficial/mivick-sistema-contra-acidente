@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.david03-10.Mivick"
     },
     "android": {
       "usesCleartextTraffic": true,
@@ -40,13 +41,19 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps._some_id_here_"
+        }
+      ],
       "expo-font",
       [
         "expo-sqlite",
         {
           "enableFTS": true,
           "useSQLCipher": true,
-          "android": { 
+          "android": {
             "enableFTS": false,
             "useSQLCipher": false
           },
@@ -58,7 +65,6 @@
         }
       ]
     ],
-    
     "experiments": {
       "typedRoutes": true
     },
