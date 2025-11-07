@@ -2,9 +2,8 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, View } from "react-native";
-import { useBle } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
 
 const { width, height } = Dimensions.get("window");
 

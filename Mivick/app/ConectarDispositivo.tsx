@@ -1,22 +1,20 @@
 // screens/ConectarDispositivo.tsx
-import React, { useState, useEffect } from "react";
-import { View, Image, ScrollView, Dimensions, Alert, Text } from "react-native";
-import { Buffer } from "buffer";
-import { Device } from "react-native-ble-plx";
 import { FirstButton } from "@/components/FirstButton";
 import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstModal } from "@/components/FirstModal";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-import { PermissionsAndroid, Platform } from "react-native";
-import { useBle } from '@/components/context/BleContext'; // ⬅️ importa o contexto BLE
-
+import { Buffer } from "buffer";
+import React, { useEffect, useState } from "react";
+import { Alert, Dimensions, Image, PermissionsAndroid, Platform, ScrollView, Text, View } from "react-native";
+import { useBle,BleProvider } from '@/app/BleContext'; // ⬅️ importa o contexto BLE
+import { Device } from "react-native-ble-plx"; // ✅ adicione esta linha
 const { height } = Dimensions.get("window");
 
 const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
 const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
 const DEVICE_NAME = "ESP32-CAM-BLE";
-const ESP32_WS_IP = "ws://192.168.1.10:80/ws"; // IP do ESP32
+//const ESP32_WS_IP = "ws://192.168.1.10:80/ws"; // IP do ESP32
 
 global.Buffer = global.Buffer || Buffer;
 
@@ -57,20 +55,26 @@ export default function ConectarDispositivo() {
   }
   return true;
 }
-  async function startScan() {
-    addLog("🔍 Iniciando varredura BLE...");
-    manager.startDeviceScan(null, null, (error, scannedDevice) => {
-      if (error) {
-        addLog("❌ Erro no scan: " + error.message);
-        return;
-      }
-      if (scannedDevice?.name === DEVICE_NAME) {
-        addLog("📡 Encontrado: " + scannedDevice.name);
-        manager.stopDeviceScan();
-        connectToDevice(scannedDevice);
-      }
-    });
+async function startScan() {
+  if (!manager) {
+    addLog("⚠️ BLE Manager ainda não inicializado");
+    Alert.alert("Aguarde", "Inicializando o Bluetooth...");
+    return;
   }
+
+  addLog("🔍 Iniciando varredura BLE...");
+  manager.startDeviceScan(null, null, (error, scannedDevice) => {
+    if (error) {
+      addLog("❌ Erro no scan: " + error.message);
+      return;
+    }
+    if (scannedDevice?.name === DEVICE_NAME) {
+      addLog("📡 Encontrado: " + scannedDevice.name);
+      manager?.stopDeviceScan();
+      connectToDevice(scannedDevice);
+    }
+  });
+}
 
   // Dentro da função connectToDevice()
 async function connectToDevice(dev: Device) {
@@ -106,7 +110,7 @@ async function connectToDevice(dev: Device) {
   }
 
   // ===================== WebSocket =====================
-  useEffect(() => {
+  /*useEffect(() => {
     const socket = new WebSocket(ESP32_WS_IP);
     socket.onopen = () => addLog("🌐 Conectado ao ESP32 via WebSocket!");
     socket.onmessage = (event) => {
@@ -121,7 +125,7 @@ async function connectToDevice(dev: Device) {
     setWs(socket);
     return () => socket.close();
   }, []);
-
+*/
   // ===================== FUNÇÕES DE INTERFACE =====================
 const openModal = async () => {
   const ok = await requestBlePermissions();
@@ -130,7 +134,8 @@ const openModal = async () => {
     return;
   }
   setModalVisible(true);
-  startScan();
+  
+  setTimeout(() => startScan(), 800);
 };
 
   const closeModal = () => setModalVisible(false);
