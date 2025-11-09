@@ -10,13 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.david03-10.Mivick"
+      "bundleIdentifier": "com.david03-10.Mivick.ios"
     },
     "android": {
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
+        
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -24,12 +25,13 @@
         "BLUETOOTH_CONNECT",
         "ACCESS_FINE_LOCATION"
       ],
-      "package": "com.david03_10.Mivick"
+      "package": "com.david03_10.Mivick.android"
     },
     "web": {
       "bundler": "metro",
       "output": "static"
     },
+    
     "plugins": [
       "expo-router",
       [
@@ -44,7 +46,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps._some_id_here_"
+          "iosUrlScheme": "com.googleusercontent.apps.361690709955-92l95olnj2mbh7mo2d3ube4sbk9eran8 "
         }
       ],
       "expo-font",

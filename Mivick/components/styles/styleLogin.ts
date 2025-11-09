@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
 
   forgotPassword: {
     flexDirection: 'row',
-  
+
   },
   forgotPasswordText: {
     color: '#6D96FF',
@@ -35,23 +35,24 @@ export const styles = StyleSheet.create({
 
   loginButton: {
     backgroundColor: '#F85200',
-    marginTop: height * 0.04,  
+    marginTop: height * 0.03,
     marginBottom: height * 0.015,
     width: '100%',
-    height: height * 0.07,
+    minHeight: height * 0.065, // altura mínima em vez de fixa
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: width * 0.03, // adiciona respiro lateral
   },
 
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: height * 0.018,
+    paddingVertical: height * 0.019,
     backgroundColor: 'transparent',
     borderRadius: 8,
-    marginTop: height * 0.015, // diminui espaçamento
+    marginTop: height * 0.015,
     borderColor: '#F85200',
     borderWidth: 2,
     width: '100%',

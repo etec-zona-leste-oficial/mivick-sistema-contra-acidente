@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.david03_10.Mivick'
+    namespace 'com.david03_10.Mivick.android'
     defaultConfig {
-        applicationId 'com.david03_10.Mivick'
+        applicationId 'com.david03_10.Mivick.android'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,4 +1,4 @@
-package com.david03_10.Mivick
+package com.david03_10.Mivick.android
 
 import android.app.Application
 import android.content.res.Configuration

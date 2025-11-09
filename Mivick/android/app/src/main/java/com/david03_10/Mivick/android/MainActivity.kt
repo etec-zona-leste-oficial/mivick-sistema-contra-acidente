@@ -1,4 +1,4 @@
-package com.david03_10.Mivick
+package com.david03_10.Mivick.android
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -44,10 +44,13 @@ export default function Cadastro() {
           }}
         />
 
-        <TouchableOpacity style={styles.googleButton}>
-          <FontAwesome name="google" size={24} color="#fff" />
-          <Text style={styles.googleButtonText}> Cadastre-se com Google</Text>
-        </TouchableOpacity>
+        <FirstButton
+
+          title="Faça Login com o Google"
+          customStyle={styles.googleButton}
+          customTextStyle={styles.googleButtonText}
+          icon={<FontAwesome name="google" size={24} color="#fff" />}
+        />
 
         <View style={styles.checkboxContainer}>
           <TouchableOpacity

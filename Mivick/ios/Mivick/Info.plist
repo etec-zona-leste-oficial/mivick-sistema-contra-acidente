@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>mivick</string>
-          <string>com.david03-10.Mivick</string>
+          <string>com.david03-10.Mivick.ios</string>
         </array>
       </dict>
       <dict>
@@ -40,7 +40,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.googleusercontent.apps._some_id_here_</string>
+          <string>com.googleusercontent.apps.361690709955-92l95olnj2mbh7mo2d3ube4sbk9eran8 </string>
         </array>
       </dict>
     </array>

@@ -21,19 +21,21 @@ export const styles = StyleSheet.create({
   },
   signupButton: {
     backgroundColor: '#F85200',
-    marginTop: height * 0.02, // reduzido
+    marginTop: height * 0.03,
     marginBottom: height * 0.015,
     width: '100%',
-    height: height * 0.065, // ligeiramente menor
+    minHeight: height * 0.065, // altura mínima em vez de fixa
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: width * 0.03, // adiciona respiro lateral
   },
+
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: height * 0.015, // reduzido
+    paddingVertical: height * 0.017, // reduzido
     backgroundColor: 'transparent',
     borderRadius: 8,
     marginTop: height * 0.015, // reduzido
@@ -49,7 +51,7 @@ export const styles = StyleSheet.create({
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: height * 0.015, // reduzido
+    marginTop: height * 0.016, // reduzido
   },
   checkbox: {
     width: width * 0.055, // ligeiramente menor
@@ -66,7 +68,7 @@ export const styles = StyleSheet.create({
   },
   checkboxText: {
     color: '#fff',
-    fontSize: height * 0.017, // ligeiramente menor
+    fontSize: height * 0.018, // ligeiramente menor
     marginLeft: 8,
     flexShrink: 1,
   },

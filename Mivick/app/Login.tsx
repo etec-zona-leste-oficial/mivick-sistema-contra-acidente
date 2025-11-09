@@ -3,6 +3,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { GoogleSignin, User } from "@react-native-google-signin/google-signin"
+
 
 // -------------------------
 
@@ -16,28 +18,43 @@ import { styles } from '../components/styles/styleLogin';
 
 // -------------------------
 
-// Variável  dimensionais
+// Variáveis
 const { width, height } = Dimensions.get("window");
+
+
+// Implementando Google Sign In
+GoogleSignin.configure({
+  iosClientId: "361690709955-92l95olnj2mbh7mo2d3ube4sbk9eran8.apps.googleusercontent.com "
+})
 
 export default function Login() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [auth, setAuth] = useState<User | null>(null)
+
+  function handleGoogleSignIn() {
+    try {
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header/>
+      <Header />
 
-       
+
       <View style={styles.content}>
         <FirstTitle text="Login" fontSize={35} />
-        <FirstTextField 
-          placeholder="Nome" 
-          style={[styles.textField, { marginTop: height * 0.06 }]} 
+        <FirstTextField
+          placeholder="Nome"
+          style={[styles.textField, { marginTop: height * 0.06 }]}
         />
-        <FirstTextField 
-          placeholder="Senha" 
-          secureTextEntry 
-          style={[styles.textField, { marginTop: height * 0.0 }]} 
+        <FirstTextField
+          placeholder="Senha"
+          secureTextEntry
+          style={[styles.textField, { marginTop: height * 0.0 }]}
         />
 
         <TouchableOpacity style={styles.forgotPassword}>
@@ -60,10 +77,14 @@ export default function Login() {
           }}
         />
 
-        <TouchableOpacity style={styles.googleButton}>
-          <FontAwesome name="google" size={24} color="#fff" />
-          <Text style={styles.googleButtonText}> Login com Google</Text>
-        </TouchableOpacity>
+        <FirstButton
+        
+          title="Faça Login com o Google"
+          customStyle={styles.googleButton}
+          customTextStyle={styles.googleButtonText} 
+          icon={<FontAwesome name="google" size={24} color="#fff" />}
+          />
+
 
         <View style={styles.checkboxContainer}>
           <TouchableOpacity
