@@ -61,7 +61,7 @@ export default function HomeScreen() {
           />
 
           <FirstButton
-            title="Conectar dispositivo"
+            title="Conectar"
             onPress={() => router.push('/ConectarDispositivo')}
           />
         </FirstCard>
@@ -101,7 +101,7 @@ export default function HomeScreen() {
           {/* Título e subtítulo */}
           <View style={{ width: '100%' }}>
             <FirstTitle
-              text="Você ainda não possui um contato cadastrado."
+              text="Você ainda não possui um Çl cadastrado."
               fontSize={Math.min(scaleFont(25), width * 0.06)} // responsivo, não ultrapassa a tela
               style={{
                 color: '#fff',

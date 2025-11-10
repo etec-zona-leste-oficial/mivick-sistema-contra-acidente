@@ -7,7 +7,7 @@ import { BleProvider } from '@/app/BleContext'; // ⬅️ importa o contexto BLE
 export default function TabsLayout() {
   return (
     <FontProvider>
-      <BleProvider>
+      
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -80,7 +80,7 @@ export default function TabsLayout() {
           }}
         />
       </Tabs>
-      </BleProvider>
+      
     </FontProvider>
   );
 }
