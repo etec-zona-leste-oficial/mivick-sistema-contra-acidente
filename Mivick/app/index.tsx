@@ -40,7 +40,7 @@ export default function Home() {
         <View style={styles.bottomButtons}>
           <FirstButton
             title="Login"
-            onPress={() => router.push('./Login')}
+            onPress={() => router.push('./Home')}
             customStyle={styles.loginButton}
             customTextStyle={[styles.loginButtonText, { fontFamily: 'SansBoldPro' }]}
           />

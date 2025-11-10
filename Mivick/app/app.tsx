@@ -1,5 +1,5 @@
 // app/_layout.tsx
-import { Stack } from "expo-router";
+/*import { Stack } from "expo-router";
 import { BleProvider } from "./BleContext"; // caminho correto
 import FontProvider from "@/components/providers/FontProvider";
 
@@ -12,3 +12,4 @@ export default function RootLayout() {
     </FontProvider>
   );
 }
+*/

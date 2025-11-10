@@ -4,12 +4,12 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
+import { useBle } from '@/components/providers/BleProvider'; // ⬅️ importa o contexto BLE
 import { FontAwesome } from "@expo/vector-icons";
 import { Buffer } from "buffer";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Alert, Dimensions, Pressable, ScrollView, View } from "react-native";
-import { useBle } from '@/app/BleContext'; // ⬅️ importa o contexto BLE
 const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
 const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
 

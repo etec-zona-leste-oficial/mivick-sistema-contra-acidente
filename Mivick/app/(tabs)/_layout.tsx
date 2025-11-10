@@ -1,13 +1,13 @@
+import { BleProvider } from '@/components/providers/BleProvider'; // ⬅️ importa o contexto BLE
 import FontProvider from '@/components/providers/FontProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { BleProvider } from '@/app/BleContext'; // ⬅️ importa o contexto BLE
 
 export default function TabsLayout() {
   return (
+    <BleProvider>
     <FontProvider>
-      
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -82,5 +82,6 @@ export default function TabsLayout() {
       </Tabs>
       
     </FontProvider>
+    </BleProvider>
   );
 }

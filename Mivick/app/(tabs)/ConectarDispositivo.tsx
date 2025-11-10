@@ -4,10 +4,11 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstModal } from "@/components/FirstModal";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
+import { useRouter } from "expo-router";
+import { useBle } from '@/components/providers/BleProvider'; // ⬅️ importa o contexto BLE
 import { Buffer } from "buffer";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Dimensions, Image, PermissionsAndroid, Platform, ScrollView, Text, View } from "react-native";
-import { useBle,BleProvider } from '@/app/BleContext'; // ⬅️ importa o contexto BLE
 import { Device } from "react-native-ble-plx"; // ✅ adicione esta linha
 const { height } = Dimensions.get("window");
 
