@@ -29,50 +29,80 @@ export default function Login() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [auth, setAuth] = useState<User | null>(null);
   const API_URL = "http://192.168.15.66:3000" //Backend
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
+  //Login Usuário
+  async function handleLogin() {
+    if (!email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/app/mivick/user/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        await AsyncStorage.setItem("token", data.token);
+        console.log("Usuário logado:", data.user);
+        router.push("./Home");
+      } else {
+        Alert.alert("Erro", data.error || "Falha ao fazer login");
+      }
+    } catch (error) {
+      console.error("Erro ao logar:", error);
+      Alert.alert("Erro", "Falha de conexão com o servidor");
+    }
+  }
 
   //Login com Google
   async function handleGoogleSignIn() {
-  try {
-    await GoogleSignin.hasPlayServices();
-    const response = await GoogleSignin.signIn();
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-    if (isSuccessResponse(response)) {
-      
-      const { idToken } = await GoogleSignin.getTokens();
+      if (isSuccessResponse(response)) {
 
-      if (!idToken) {
-        Alert.alert("Erro", "Não foi possível obter o ID Token do Google.");
-        return;
-      }
+        const { idToken } = await GoogleSignin.getTokens();
 
-      // Envia o token para o backend
-      const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: idToken }),
-      });
+        if (!idToken) {
+          Alert.alert("Erro", "Não foi possível obter o ID Token do Google.");
+          return;
+        }
 
-      const data = await backendResponse.json();
+        // Envia o token para o backend
+        const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: idToken }),
+        });
 
-      if (backendResponse.ok) {
-        console.log("✅ Token do backend:", data.token);
-        console.log("Google ID Token:", idToken);
-        await AsyncStorage.setItem("token", data.token);
-        router.push("./Home");
+        const data = await backendResponse.json();
+
+        if (backendResponse.ok) {
+          console.log("✅ Token do backend:", data.token);
+          console.log("Google ID Token:", idToken);
+          await AsyncStorage.setItem("token", data.token);
+          router.push("./Home");
+        } else {
+          console.warn("Erro do backend:", data.message);
+          Alert.alert("Erro", "Falha ao autenticar com o backend.");
+        }
       } else {
-        console.warn("Erro do backend:", data.message);
-        Alert.alert("Erro", "Falha ao autenticar com o backend.");
+        console.warn("Login cancelado ou falhou.");
       }
-    } else {
-      console.warn("Login cancelado ou falhou.");
+    } catch (error) {
+      console.error("Erro no login com Google:", error);
     }
-  } catch (error) {
-    console.error("Erro no login com Google:", error);
   }
-}
 
-  
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,24 +111,25 @@ export default function Login() {
         <FirstTitle text="Login" fontSize={35} />
 
         <FirstTextField
-          placeholder="Nome"
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
           style={[styles.textField, { marginTop: height * 0.06 }]}
         />
         <FirstTextField
           placeholder="Senha"
           secureTextEntry
+          value={senha}
+          onChangeText={setSenha}
           style={[styles.textField, { marginTop: height * 0.0 }]}
         />
 
-        <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotPasswordText}>Esqueceu a senha</Text>
-        </TouchableOpacity>
-
         <FirstButton
           title="Login"
-          onPress={() => router.push('./Home')}
+          onPress={handleLogin}
           customStyle={styles.loginButton}
         />
+
 
         <View
           style={{

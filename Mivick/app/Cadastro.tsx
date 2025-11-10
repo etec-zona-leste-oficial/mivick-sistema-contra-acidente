@@ -22,50 +22,87 @@ GoogleSignin.configure({
 export default function Cadastro() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-   const [auth, setAuth] = useState<User | null>(null);
-   const API_URL = "http://192.168.15.66:3000" //Backend
+  const [auth, setAuth] = useState<User | null>(null);
+  const API_URL = "http://192.168.15.66:3000" //Backend
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
 
-   // Cadastro com google 
 
-    async function handleGoogleSignIn() {
-     try {
-       await GoogleSignin.hasPlayServices();
-       const response = await GoogleSignin.signIn();
-   
-       if (isSuccessResponse(response)) {
-         
-         const { idToken } = await GoogleSignin.getTokens();
-   
-         if (!idToken) {
-           Alert.alert("Erro", "Não foi possível obter o ID Token do Google.");
-           return;
-         }
-   
-         // Envia o token para o backend
-         const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
-           method: "POST",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ token: idToken }),
-         });
-   
-         const data = await backendResponse.json();
-   
-         if (backendResponse.ok) {
-           console.log("Token do backend:", data.token);
-           console.log("Google ID Token:", idToken);
-           await AsyncStorage.setItem("token", data.token);
-           router.push("./Home");
-         } else {
-           console.warn("Erro do backend:", data.message);
-           Alert.alert("Erro", "Falha ao autenticar com o backend.");
-         }
-       } else {
-         console.warn("Login cancelado ou falhou.");
-       }
-     } catch (error) {
-       console.error("Erro no login com Google:", error);
-     }
-   }
+  // Cadastro Usuário
+  async function handleRegister() {
+    if (!nome || !telefone || !email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      Alert.alert("Erro", "As senhas não coincidem!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/app/mivick/user/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, telefone, email, senha }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+        router.push("./Login");
+      } else {
+        Alert.alert("Erro", data.error || "Falha ao cadastrar");
+      }
+    } catch (error) {
+      console.error("Erro ao cadastrar:", error);
+      Alert.alert("Erro", "Falha de conexão com o servidor");
+    }
+  }
+  // Cadastro com google 
+  async function handleGoogleSignIn() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+
+      if (isSuccessResponse(response)) {
+
+        const { idToken } = await GoogleSignin.getTokens();
+
+        if (!idToken) {
+          Alert.alert("Erro", "Não foi possível obter o ID Token do Google.");
+          return;
+        }
+
+        // Envia o token para o backend
+        const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: idToken }),
+        });
+
+        const data = await backendResponse.json();
+
+        if (backendResponse.ok) {
+          console.log("Token do backend:", data.token);
+          console.log("Google ID Token:", idToken);
+          await AsyncStorage.setItem("token", data.token);
+          router.push("./Home");
+        } else {
+          console.warn("Erro do backend:", data.message);
+          Alert.alert("Erro", "Falha ao autenticar com o backend.");
+        }
+      } else {
+        console.warn("Login cancelado ou falhou.");
+      }
+    } catch (error) {
+      console.error("Erro no login com Google:", error);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,18 +110,18 @@ export default function Cadastro() {
 
       <View style={styles.content}>
         <FirstTitle text="Cadastro" fontSize={35} />
-
-        <FirstTextField placeholder="Nome" style={styles.textField} />
-        <FirstTextField placeholder="Telefone" style={styles.textField} />
-        <FirstTextField placeholder="Email" style={styles.textField} />
-        <FirstTextField placeholder="Senha" style={styles.textField} secureTextEntry />
-        <FirstTextField placeholder="Confirmar senha" style={styles.textField} secureTextEntry />
+        <FirstTextField placeholder="Nome" value={nome} onChangeText={setNome} style={styles.textField} />
+        <FirstTextField placeholder="Telefone" value={telefone} onChangeText={setTelefone} maskTelefone={true} style={styles.textField} />
+        <FirstTextField placeholder="Email" value={email} onChangeText={setEmail} style={styles.textField} />
+        <FirstTextField placeholder="Senha" value={senha} onChangeText={setSenha} secureTextEntry style={styles.textField} />
+        <FirstTextField placeholder="Confirmar senha" value={confirmarSenha} onChangeText={setConfirmarSenha} secureTextEntry style={styles.textField} />
 
         <FirstButton
           title="Cadastre-se"
+          onPress={handleRegister}
           customStyle={styles.signupButton}
-          onPress={() => console.log("Cadastro com dados")}
         />
+
 
         <View
           style={{
