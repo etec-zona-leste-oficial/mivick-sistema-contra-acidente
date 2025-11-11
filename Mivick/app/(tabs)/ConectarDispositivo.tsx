@@ -76,6 +76,22 @@ async function startScan() {
     }
   });
 }
+// Enviar credenciais Wi-Fi
+async function enviarWifi(ssid: string, senha: string) {
+  if (!device || !connected) return;
+  try {
+    const msg = `WIFI|${ssid}|${senha}`;
+    await device.writeCharacteristicWithResponseForService(
+      SERVICE_UUID,
+      CHARACTERISTIC_UUID,
+      Buffer.from(msg, "utf-8").toString("base64")
+    );
+    addLog("📶 Enviando credenciais Wi-Fi...");
+  } catch (e) {
+    console.error("❌ Erro ao enviar Wi-Fi:", e);
+  }
+}
+
 
   // Dentro da função connectToDevice()
 async function connectToDevice(dev: Device) {
@@ -85,10 +101,65 @@ async function connectToDevice(dev: Device) {
     setDevice(connectedDevice);
     setConnected(true);
     addLog("✅ Conectado a " + connectedDevice.name);
+// Escuta notificações BLE
+connectedDevice.monitorCharacteristicForService(
+  SERVICE_UUID,
+  CHARACTERISTIC_UUID,
+  (error, characteristic) => {
+    if (error) {
+      addLog("❌ Erro ao monitorar BLE: " + error.message);
+      return;
+    }
 
+    const valor = Buffer.from(characteristic?.value ?? "", "base64").toString("utf-8");
+    addLog("📩 Recebido: " + valor);
+
+    // Se o ESP32 responder com IP
+    if (valor.startsWith("WIFI_OK|")) {
+      const ip = valor.split("|")[1];
+      addLog("🌐 Wi-Fi conectado. IP: " + ip);
+      conectarWebSocket(ip);
+    } else if (valor.startsWith("WIFI_FAIL")) {
+      Alert.alert("Erro", "Falha ao conectar o ESP32 ao Wi-Fi");
+    }
+  }
+);
     // Envia comando BLE para ESP32 conectar ao Wi-Fi
-    await enviarComando("WIFI_ON");
-    addLog("📶 Solicitando conexão Wi-Fi ao ESP32...");
+    // Após conectar BLE, solicitar SSID/Senha ao usuário
+Alert.prompt(
+  "Conectar ao Wi-Fi",
+  "Digite o nome (SSID) e a senha da sua rede",
+  [
+    {
+      text: "Cancelar",
+      style: "cancel"
+    },
+    {
+      text: "Enviar",
+     onPress: async (entrada) => {
+  if (!entrada) {
+    Alert.alert("Aviso", "Você precisa digitar o nome e a senha da rede Wi-Fi.");
+    return;
+  }
+
+  try {
+    const [ssid, senha] = entrada.split(" ");
+    if (!ssid || !senha) {
+      Alert.alert("Formato inválido", "Digite: NOME_SSID SENHA_WIFI");
+      return;
+    }
+
+    await enviarWifi(ssid, senha);
+    addLog(`📶 Enviando credenciais: ${ssid}`);
+  } catch (err) {
+    console.error("Erro ao enviar Wi-Fi:", err);
+    Alert.alert("Erro", "Falha ao processar as credenciais Wi-Fi.");
+  }
+}
+    }
+  ],
+  "plain-text"
+);
   } catch (e) {
     console.error("❌ Erro ao conectar BLE:", e);
     Alert.alert("Erro", "Falha ao conectar ao dispositivo BLE.");
@@ -111,22 +182,23 @@ async function connectToDevice(dev: Device) {
   }
 
   // ===================== WebSocket =====================
-  /*useEffect(() => {
-    const socket = new WebSocket(ESP32_WS_IP);
-    socket.onopen = () => addLog("🌐 Conectado ao ESP32 via WebSocket!");
-    socket.onmessage = (event) => {
-      const base64Image = event.data as string;
-      addLog("🖼️ Imagem recebida via WebSocket");
-      setImages((prev) => [...prev, `data:image/jpeg;base64,${base64Image}`]);
-    };
-    socket.onerror = (err) =>
-      addLog("❌ Erro WebSocket: " + JSON.stringify(err));
-    socket.onclose = () => addLog("⚠️ Conexão WebSocket encerrada");
+  function conectarWebSocket(ip: string) {
+  const socket = new WebSocket(`ws://${ip}/ws`);
 
-    setWs(socket);
-    return () => socket.close();
-  }, []);
-*/
+  socket.onopen = () => addLog("🌐 WebSocket conectado!");
+  socket.onmessage = (event) => {
+    addLog("📨 WS: " + event.data);
+    // Se vier imagem Base64
+    if (event.data.startsWith("/9j/")) {
+      setImages((prev) => [...prev, `data:image/jpeg;base64,${event.data}`]);
+    }
+  };
+  socket.onerror = (err) => addLog("❌ Erro WS: " + JSON.stringify(err));
+  socket.onclose = () => addLog("⚠️ WS desconectado");
+
+  setWs(socket);
+}
+
   // ===================== FUNÇÕES DE INTERFACE =====================
 const openModal = async () => {
   const ok = await requestBlePermissions();

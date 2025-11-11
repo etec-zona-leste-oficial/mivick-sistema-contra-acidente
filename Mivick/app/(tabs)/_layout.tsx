@@ -79,6 +79,13 @@ export default function TabsLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="ConectarDispositivo"
+          options={{
+          href: null, // 👈 impede que apareça como aba
+          }}
+        />
+
       </Tabs>
       
     </FontProvider>

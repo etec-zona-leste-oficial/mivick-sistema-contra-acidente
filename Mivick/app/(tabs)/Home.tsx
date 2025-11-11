@@ -61,7 +61,7 @@ export default function HomeScreen() {
           />
 
           <FirstButton
-            title="Conectar"
+            title="Conectar Dispositivo"
             onPress={() => router.push('/ConectarDispositivo')}
           />
         </FirstCard>
