@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Dimensions, Alert, TouchableOpacity, Text } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { View, ScrollView, Dimensions, Alert, Text, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@expo/vector-icons';
 
 import { FirstTextField } from '@/components/FirstTextField/FirstTextField';
 import { FirstSubTitle } from '@/components/FirstSubTitle';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
-import FontProvider from '@/components/providers/FontProvider';
 import { FirstButton } from '@/components/FirstButton';
+import FontProvider from '@/components/providers/FontProvider';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://192.168.15.66:3000/app/mivick/user'; // Seu backend
+const API_URL = 'http://192.168.15.66:3000/app/mivick/user';
 
 export default function Perfil() {
   const [userData, setUserData] = useState({ nome: '', telefone: '', email: '', foto: '' });
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Função para buscar perfil
+  // Buscar perfil
   const fetchProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -25,14 +26,14 @@ export default function Perfil() {
       const response = await fetch(`${API_URL}/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       const data = await response.json();
+
       if (response.ok) {
         setUserData({
-          nome: data.user.nome,
-          telefone: data.user.telefone,
-          email: data.user.email,
-          foto: data.user.foto || '',
+          nome: data.user.nome || '',
+          telefone: data.user.telefone || '',
+          email: data.user.email || '',
+          foto: data.user.foto ? `${API_URL.replace('/user', '')}${data.user.foto}` : '',
         });
       } else {
         Alert.alert('Erro', data.error || 'Falha ao carregar perfil');
@@ -49,38 +50,61 @@ export default function Perfil() {
     fetchProfile();
   }, []);
 
-  // Função para atualizar perfil
+  // Atualizar perfil (com upload da foto)
   const handleSave = async () => {
     try {
+      setSaving(true);
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
+
+      const formData = new FormData();
+      formData.append('nome', userData.nome);
+      formData.append('telefone', userData.telefone);
+      formData.append('email', userData.email);
+
+      if (userData.foto && userData.foto.startsWith('file')) {
+        formData.append('foto', {
+          uri: userData.foto,
+          name: 'profile.jpg',
+          type: 'image/jpeg',
+        } as any);
+      }
 
       const response = await fetch(`${API_URL}/profile`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          nome: userData.nome,
-          telefone: userData.telefone,
-          email: userData.email,
-        }),
+        body: formData,
       });
 
       const data = await response.json();
+
       if (response.ok) {
-        Alert.alert('Sucesso', 'Perfil atualizado!');
+        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+        setUserData(prev => ({
+          ...prev,
+          foto: data.user.foto ? `${API_URL.replace('/user', '')}${data.user.foto}` : prev.foto,
+        }));
       } else {
         Alert.alert('Erro', data.error || 'Falha ao atualizar perfil');
       }
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading) return <Text style={{ color: '#fff', textAlign: 'center', marginTop: 50 }}>Carregando...</Text>;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator size="large" color="#F85200" />
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>Carregando perfil...</Text>
+      </View>
+    );
+  }
 
   return (
     <FontProvider>
@@ -106,14 +130,14 @@ export default function Perfil() {
         >
           <PerfilFoto
             style={{ width: width * 0.27, height: width * 0.27 }}
-            showEditIcon={true}
+            showEditIcon
             onChangePhoto={(uri: string) => setUserData(prev => ({ ...prev, foto: uri }))}
             imageUri={userData.foto}
           />
         </View>
 
         <FirstSubTitle
-          text="Editar"
+          text="Editar Perfil"
           style={{
             fontSize: Math.min(width * 0.05, 20),
             color: '#F85200',
@@ -178,9 +202,16 @@ export default function Perfil() {
           </View>
         ))}
 
-
         {/* BOTÃO SALVAR */}
-        <FirstButton title="Salvar" customStyle={{ marginHorizontal: width * 0.05 }} onPress={handleSave} />
+        <FirstButton
+          title={saving ? 'Salvando...' : 'Salvar'}
+          customStyle={{
+            marginHorizontal: width * 0.05,
+            opacity: saving ? 0.6 : 1,
+          }}
+          disabled={saving}
+          onPress={handleSave}
+        />
       </ScrollView>
     </FontProvider>
   );
