@@ -45,7 +45,7 @@ async function registrarDispositivoSeNecessario(): Promise<number | null> {
     const token = await AsyncStorage.getItem("token");
 
     const response = await fetch(
-      "http://192.168.15.66:3000/app/mivick/registrar-dispositivo",
+      "http://192.168.1.7:3000/app/mivick/iot/registrar-dispositivo",
       {
         method: "POST",
         headers: {
@@ -104,7 +104,7 @@ async function enviarParaBackend(body: Partial<BackendPayload>) {
       return;
     }
 
-    const response = await fetch("http://192.168.15.66:3000/app/mivick/leituras", {
+    const response = await fetch("http://192.168.1.7:3000/app/mivick/iot/leituras", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

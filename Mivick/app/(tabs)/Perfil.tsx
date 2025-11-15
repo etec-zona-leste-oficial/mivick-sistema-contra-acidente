@@ -10,7 +10,7 @@ import { FirstButton } from '@/components/FirstButton';
 import FontProvider from '@/components/providers/FontProvider';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://192.168.15.66:3000/app/mivick/user';
+const API_URL = 'http://192.168.1.7:3000/app/mivick/user';
 
 export default function Perfil() {
   const [userData, setUserData] = useState({ nome: '', telefone: '', email: '', foto: '' });

@@ -39,7 +39,7 @@ export default function CadastrarContato() {
 
             const token = 'SEU_TOKEN_JWT_AQUI'; 
 
-            const response = await fetch('http://192.168.15.66:3000/app/mivick/contact', {
+            const response = await fetch('http://192.168.1.7:3000/app/mivick/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

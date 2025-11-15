@@ -23,7 +23,7 @@ export default function Cadastro() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [auth, setAuth] = useState<User | null>(null);
-  const API_URL = "http://192.168.15.66:3000" //Backend
+  const API_URL = "http://192.168.1.7:3000" //Backend
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
