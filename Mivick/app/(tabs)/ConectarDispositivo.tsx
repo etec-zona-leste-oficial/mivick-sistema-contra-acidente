@@ -31,7 +31,46 @@ const { height } = Dimensions.get("window");
 const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
 const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
 const DEVICE_NAME = "ESP32-CAM-BLE";
-const DEVICE_ID = 1; // <-- coloque o ID real quando for dinâmico
+
+// ---------------------- REGISTRAR DISPOSITIVO ----------------------
+async function registrarDispositivoSeNecessario(): Promise<number | null> {
+  try {
+    let storedId = await AsyncStorage.getItem("device_id");
+
+    if (storedId) {
+      console.log("📦 Dispositivo já registrado! ID:", storedId);
+      return Number(storedId);
+    }
+
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await fetch(
+      "http://192.168.15.66:3000/app/mivick/registrar-dispositivo",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ nome: "MIVICK-ESP32" })
+      }
+    );
+
+    const json = await response.json();
+
+    if (json.id_dispositivo) {
+      await AsyncStorage.setItem("device_id", String(json.id_dispositivo));
+      return Number(json.id_dispositivo);
+    }
+
+    return null;
+  } catch (err) {
+    console.log("❌ Erro registrarDispositivo:", err);
+    return null;
+  }
+}
+
+
 
 // ---------------------- BACKEND PAYLOAD ----------------------
 type BackendPayload = {
@@ -60,6 +99,11 @@ async function enviarParaBackend(body: Partial<BackendPayload>) {
   try {
     const token = await AsyncStorage.getItem("token");
 
+    if (!body.id_dispositivo) {
+      console.warn("⚠️ Tentando enviar sem ID do dispositivo");
+      return;
+    }
+
     const response = await fetch("http://192.168.15.66:3000/app/mivick/leituras", {
       method: "POST",
       headers: {
@@ -69,10 +113,10 @@ async function enviarParaBackend(body: Partial<BackendPayload>) {
       body: JSON.stringify(body)
     });
 
-    const resp = await response.json();
-    console.log("📡 Backend:", resp);
+    console.log("📡 Backend:", await response.json());
+
   } catch (error) {
-    console.log("❌ Erro ao enviar para o backend:", error);
+    console.log("❌ Erro ao enviar:", error);
   }
 }
 
@@ -90,12 +134,18 @@ export default function ConectarDispositivo() {
   const [ssidModalVisible, setSsidModalVisible] = useState(false);
   const [inputSsid, setInputSsid] = useState("");
   const [inputPass, setInputPass] = useState("");
-
+  const [deviceId, setDeviceId] = useState<number | null>(null);
   function addLog(msg: string) {
     console.log(msg);
     setLogs((prev) => [...prev, msg]);
   }
-
+useEffect(() => {
+  async function init() {
+    const id = await registrarDispositivoSeNecessario();
+    if (id) setDeviceId(Number(id));
+  }
+  init();
+}, []);
   // ---------------------- PERMISSÕES ----------------------
   async function requestBlePermissions() {
     if (Platform.OS === "android") {
@@ -150,10 +200,10 @@ export default function ConectarDispositivo() {
       );
 
       addLog("📶 Wi-Fi enviado via BLE!");
-
+      if (deviceId === null) return;
       // salvar no backend
       enviarParaBackend({
-        id_dispositivo: DEVICE_ID,
+        id_dispositivo: deviceId,
         wifi_ssid: ssid,
         wifi_senha: senha
       });
@@ -188,10 +238,10 @@ export default function ConectarDispositivo() {
 
           const valor = Buffer.from(characteristic?.value ?? "", "base64").toString("utf-8");
           addLog("📩 BLE: " + valor);
-
+          if (deviceId === null) return;
           // salvar log
           enviarParaBackend({
-            id_dispositivo: DEVICE_ID,
+            id_dispositivo: deviceId,
             ble_log: valor
           });
 
@@ -208,6 +258,11 @@ export default function ConectarDispositivo() {
 
           else if (valor.startsWith("VEICULO|")) {
             addLog("🚗 Info do veículo: " + valor);
+           if (deviceId === null) return;
+            enviarParaBackend({
+            id_dispositivo: deviceId,
+            ble_log: valor
+          });
           }
         }
       );
@@ -232,8 +287,9 @@ export default function ConectarDispositivo() {
 
       socket.onopen = () => {
         addLog("🌐 WebSocket conectado!");
+        if (deviceId === null) return;
         enviarParaBackend({
-          id_dispositivo: DEVICE_ID,
+          id_dispositivo: deviceId,
           ws_log: "WS conectado"
         });
       };
@@ -244,9 +300,9 @@ export default function ConectarDispositivo() {
         // Sensor JSON
         if (event.data.startsWith("{")) {
           const dados = JSON.parse(event.data);
-
+          if (deviceId === null) return;
           enviarParaBackend({
-            id_dispositivo: DEVICE_ID,
+            id_dispositivo: deviceId,
             distancia: dados.distancia,
             impacto: dados.impacto,
             movimentacao: dados.movimentacao,
@@ -259,9 +315,9 @@ export default function ConectarDispositivo() {
         // Imagem
         else if (event.data.startsWith("/9j/")) {
           setImages((prev) => ["data:image/jpeg;base64," + event.data, ...prev]);
-
+         if (deviceId === null) return;
           enviarParaBackend({
-            id_dispositivo: DEVICE_ID,
+            id_dispositivo: deviceId,
             foto_base64: event.data
           });
         }
@@ -269,16 +325,18 @@ export default function ConectarDispositivo() {
 
       socket.onerror = () => {
         addLog("❌ Erro no WebSocket");
+       if (deviceId === null) return;
         enviarParaBackend({
-          id_dispositivo: DEVICE_ID,
+          id_dispositivo: deviceId,
           ws_log: "Erro WS"
         });
       };
 
       socket.onclose = () => {
         addLog("⚠️ WebSocket fechado");
+       if (deviceId === null) return;
         enviarParaBackend({
-          id_dispositivo: DEVICE_ID,
+          id_dispositivo: deviceId,
           ws_log: "WS desconectado"
         });
       };
