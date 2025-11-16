@@ -1,3 +1,7 @@
+/* Mivick_IOT_S3_GOOUUU.ino
+   ESP principal (ciclista) — BLE <-> App, sensores, câmera, WebSocket.
+*/
+
 #include <Wire.h>
 #include <Arduino.h>
 #include <NimBLEDevice.h>
@@ -11,108 +15,54 @@
 
 using namespace std;
 
-// ================= CONFIG =================
-#define SERVICE_UUID        "12345678-1234-1234-1234-123456789abc"
-#define CHARACTERISTIC_UUID "abcdefab-1234-1234-1234-abcdefabcdef"
-MPU6050 mpu(Wire);
+// ---------- CONFIG MPU / I2C (GOOUUU S3 pins) ----------
+MPU6050 mpu(Wire);              // CORREÇÃO: Wire (não WWire)
 #define MPU_SDA 20
 #define MPU_SCL 21
+bool mpuActive = false;
+
+// ---------- SENSORES ----------
 #define TRIG_PIN 3
 #define ECHO_PIN 19
 #define SW420_PIN 14
+bool sensorActive = false;
+bool sw420Active = false;
+unsigned long lastImpactTime = 0;
 
-bool mpuActive = false, sensorActive = false, sw420Active = false;
+// ---------- ACIDENTE ----------
 int acidente = 0;
-unsigned long lastImpactTime = 0, lastResetTime = 0;
-String wifiSSID = "", wifiPASS = "";
+unsigned long lastResetTime = 0;
 
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+// ---------- BLE ----------
+#define SERVICE_UUID        "12345678-1234-1234-1234-123456789abc"
+#define CHARACTERISTIC_UUID "abcdefab-1234-1234-1234-abcdefabcdef"
 
 NimBLECharacteristic* pCharacteristic = nullptr;
-NimBLEServer* pServer = nullptr;
+NimBLEServer* pServer = nullptr;   // USAR pServer aqui
 bool deviceConnected = false;
-// ================= FUNÇÕES GLOBAIS =================
-void notifyClients(String message) {
-    ws.textAll(message);
-}
 
-void sendPhotoWS() {
-    camera_fb_t *fb = esp_camera_fb_get();
-    if (!fb) {
-        Serial.println("❌ Falha ao capturar imagem");
-        return;
-    }
+// ---------- WEBSOCKET / HTTP ----------
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+bool wsStarted = false;
 
-    String imageBase64 = base64::encode(fb->buf, fb->len);
-    ws.textAll(imageBase64);
-    esp_camera_fb_return(fb);
-    Serial.println("✅ Foto enviada via WebSocket");
-    Serial.printf("📷 Tamanho da imagem: %d bytes\n", fb->len);
-}
-// ================= BLE SERVER CALLBACKS =================
-class MyServerCallbacks : public NimBLEServerCallbacks {
-  void onConnect(NimBLEServer* pServer) override {
-    deviceConnected = true;
-    Serial.println("🔗 Cliente BLE conectado!");
-  }
-  void onDisconnect(NimBLEServer* pServer) override {
-    deviceConnected = false;
-    sensorActive = mpuActive = sw420Active = false;
-    Serial.println("❌ Cliente BLE desconectado!");
-    NimBLEDevice::getAdvertising()->start();
-  }
-};
+// ---------- WIFI (recebido via BLE) ----------
+String wifiSSID = "", wifiPASS = "";
+bool wifiRequest = false;       // recebi credenciais via BLE e preciso conectar
+bool wifiConnecting = false;
+unsigned long wifiStartAttempt = 0;
+const unsigned long WIFI_TIMEOUT = 15000; // 15s
 
-// ================= BLE WRITE CALLBACK =================
-class MyCallbacks : public NimBLECharacteristicCallbacks {
-  void onWrite(NimBLECharacteristic* pCharacteristic) override {
-    String msg = String(pCharacteristic->getValue().c_str());
-    Serial.println("📩 Recebido via BLE: " + msg);
+// ---------- FOTO THROTTLE ----------
+unsigned long lastPhotoMillis = 0;
+const unsigned long PHOTO_MIN_INTERVAL = 5000; // 5s entre fotos
 
-    if (msg == "ON") {
-      sensorActive = mpuActive = sw420Active = true;
-      Serial.println("✅ Sensores ativados");
-    } 
-    else if (msg == "OFF") {
-      sensorActive = mpuActive = sw420Active = false;
-      Serial.println("🛑 Sensores desativados");
-    }
-    else if (msg.startsWith("WIFI|")) {
-      int first = msg.indexOf('|');
-      int second = msg.indexOf('|', first + 1);
-      wifiSSID = msg.substring(first + 1, second);
-      wifiPASS = msg.substring(second + 1);
-      Serial.printf("📡 Credenciais recebidas: SSID=%s, PASS=%s\n", wifiSSID.c_str(), wifiPASS.c_str());
+// ---------- HELPERS ----------
+void notifyClients(String message) { if (wsStarted) ws.textAll(message); }
 
-      WiFi.begin(wifiSSID.c_str(), wifiPASS.c_str());
-      unsigned long start = millis();
-      while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
-        delay(500);
-        Serial.print(".");
-      }
-
-      if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\n✅ Wi-Fi conectado!");
-        String ip = WiFi.localIP().toString();
-        pCharacteristic->setValue(("WIFI_OK|" + ip).c_str());
-        pCharacteristic->notify();
-
-        // Envia Wi-Fi para o ESP do veículo
-        String wifiMsg = "WIFI|" + wifiSSID + "|" + wifiPASS;
-        pCharacteristic->setValue(wifiMsg.c_str());
-        pCharacteristic->notify();
-        Serial.println("📤 Credenciais enviadas via BLE para o ESP do veículo!");
-      } else {
-        pCharacteristic->setValue("WIFI_FAIL");
-        pCharacteristic->notify();
-      }
-    }
-  }
-};
-
-// ================= CAMERA =================
-void startCamera() {
+// ---------- CAMERA ----------
+void startCamera(){
+  Serial.printf("Heap antes camera: %u\n", esp_get_free_heap_size());
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -134,136 +84,263 @@ void startCamera() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
+
+  // conservador por padrão para evitar travamentos
   config.frame_size = FRAMESIZE_VGA;
-  config.jpeg_quality = 10;
-  config.fb_count = 2;
-  esp_camera_init(&config);
-  Serial.println("📷 Câmera iniciada");
+  config.jpeg_quality = 12;
+  config.fb_count = 1;
+  config.fb_location = CAMERA_FB_IN_DRAM;
+  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+
+  if (psramFound()){
+    Serial.println("PSRAM detectada -> usando PSRAM para framebuffers");
+    config.fb_location = CAMERA_FB_IN_PSRAM;
+    config.fb_count = 2;
+    config.jpeg_quality = 10;
+  } else {
+    Serial.println("PSRAM NAO detectada -> modo economico");
+  }
+
+  esp_err_t err = esp_camera_init(&config);
+  if (err != ESP_OK) {
+    Serial.printf("Camera init failed: 0x%x\n", err);
+    Serial.printf("Heap apos falha: %u\n", esp_get_free_heap_size());
+    return;
+  }
+  sensor_t *s = esp_camera_sensor_get();
+  if (s) s->set_framesize(s, FRAMESIZE_QVGA);
+  Serial.printf("Camera init OK. Heap apos init: %u\n", esp_get_free_heap_size());
 }
 
-// ================= SETUP =================
-void setup() {
+void sendPhotoWS(){
+  if (!wsStarted) return;
+  if (millis() - lastPhotoMillis < PHOTO_MIN_INTERVAL) return; // throttle
+  camera_fb_t* fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("Falha captura foto");
+    return;
+  }
+  // encode base64
+  String b64 = base64::encode(fb->buf, fb->len);
+  ws.textAll(b64);
+  esp_camera_fb_return(fb);
+  Serial.printf("Foto enviada (%d bytes)\n", fb->len);
+  lastPhotoMillis = millis();
+}
+
+// ---------- BLE callbacks ----------
+class MyServerCallbacks : public NimBLEServerCallbacks {
+  void onConnect(NimBLEServer* s) override {
+    deviceConnected = true;
+    Serial.println("BLE conectado");
+  }
+  void onDisconnect(NimBLEServer* s) override {
+    deviceConnected = false;
+    sensorActive = mpuActive = sw420Active = false;
+    Serial.println("BLE desconectado - restarting adv");
+    NimBLEDevice::getAdvertising()->start();
+  }
+};
+
+class MyCallbacks : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* c) override {
+    std::string val = c->getValue();
+    String msg = String(val.c_str());
+    Serial.println("BLE escreveu: " + msg);
+
+    if (msg == "ON") {
+      sensorActive = mpuActive = sw420Active = true;
+      Serial.println("Sensores ativados");
+    } else if (msg == "OFF") {
+      sensorActive = mpuActive = sw420Active = false;
+      Serial.println("Sensores desativados");
+    } else if (msg.startsWith("WIFI|")) {
+      int first = msg.indexOf('|');
+      int second = msg.indexOf('|', first + 1);
+      if (first != -1 && second != -1) {
+        wifiSSID = msg.substring(first + 1, second);
+        wifiPASS = msg.substring(second + 1);
+        wifiRequest = true; // sinal pro loop conectar
+        Serial.printf("Credenciais recebidas via BLE: %s / %s\n", wifiSSID.c_str(), wifiPASS.c_str());
+      } else {
+        Serial.println("Formato WIFI invalido");
+      }
+    } else if (msg.startsWith("VEICULO|")) {
+      // Se outra entidade enviar via BLE dados do veículo para o app, encaminhar
+      Serial.println("VEICULO mensagem recebida (via BLE): " + msg);
+      if (pCharacteristic) {
+        pCharacteristic->setValue(msg.c_str());
+        pCharacteristic->notify();
+      }
+      notifyClients(msg);
+    }
+  }
+};
+
+// ---------- SETUP ----------
+void setup(){
   Serial.begin(115200);
+  delay(100);
+
+  lastResetTime = millis(); // inicializa contador de reset
+
+  // I2C MPU
   Wire.begin(MPU_SDA, MPU_SCL);
+  Serial.println("I2C iniciado");
+
+  // Camera primeiro
   startCamera();
 
+  // BLE init
   NimBLEDevice::init("ESP32-CAM-BLE");
-  pServer = NimBLEDevice::createServer();
+  pServer = NimBLEDevice::createServer();           // CORREÇÃO: usar pServer
   pServer->setCallbacks(new MyServerCallbacks());
-
-  NimBLEService* pService = pServer->createService(SERVICE_UUID);
-  pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+  NimBLEService* svc = pServer->createService(SERVICE_UUID);
+  pCharacteristic = svc->createCharacteristic(CHARACTERISTIC_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
   pCharacteristic->setCallbacks(new MyCallbacks());
-  pService->start();
-
+  svc->start();
   NimBLEDevice::getAdvertising()->addServiceUUID(SERVICE_UUID);
   NimBLEDevice::getAdvertising()->start();
+  Serial.println("BLE advertising iniciado");
 
-  ws.onEvent([](AsyncWebSocket *, AsyncWebSocketClient *, AwsEventType type, void *, uint8_t *, size_t){
-    if (type == WS_EVT_CONNECT) Serial.println("📡 Cliente WebSocket conectado");
-  });
-  server.addHandler(&ws);
-  server.begin();
-
+  // Não iniciar WebServer ainda - só apos WiFi conectado
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   pinMode(SW420_PIN, INPUT);
-
-  Serial.println("✅ Setup completo!");
+  Serial.println("Setup finalizado (camera + BLE). Aguardando credenciais via BLE.");
 }
 
-
-
-// ================= LOOP =================
-void loop() {
-    ws.cleanupClients();
-
-    // ===== ULTRASSÔNICO =====
-    if (sensorActive) {
-        digitalWrite(TRIG_PIN, LOW);
-        delayMicroseconds(2);
-        digitalWrite(TRIG_PIN, HIGH);
-        delayMicroseconds(10);
-        digitalWrite(TRIG_PIN, LOW);
-
-        long duration = pulseIn(ECHO_PIN, HIGH, 30000);
-        float distance_cm = (duration == 0) ? -1 : (duration / 2.0) * 0.0343;
-
-        if (distance_cm <= 100 && distance_cm > 0) {
-            Serial.printf("🚨 Objeto a %.2f cm -> próximo\n", distance_cm);
-            acidente++;
-            sendPhotoWS();
-            notifyClients("ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm, 2));
-            delay(500);
-        }
-    }
-
-    // ===== MPU6050 =====
-    if (mpuActive) {
-        static bool mpuInit = false;
-        if (!mpuInit) {
-            uint8_t status = mpu.begin();
-            if (status == 0) {
-                mpu.calcOffsets(true, true);
-                mpuInit = true;
-                Serial.println("✅ MPU6050 iniciado");
-            }
-        }
-        if (mpuInit) {
-            mpu.update();
-            float accMagnitude = sqrt(
-                mpu.getAccX()*mpu.getAccX() +
-                mpu.getAccY()*mpu.getAccY() +
-                mpu.getAccZ()*mpu.getAccZ()
-            );
-            if (accMagnitude > 15.0) {
-                Serial.println("💥 BATIDA DETECTADA (MPU)!");
-                acidente++;
-                pCharacteristic->setValue("MPU6050|BATIDA");
-                pCharacteristic->notify();
-                notifyClients("MPU6050|BATIDA|" + String(accMagnitude, 2));
-                sendPhotoWS();
-                delay(500);
-            }
-        }
-    }
-
-    // ===== SW420 =====
-    if (sw420Active) {
-        int impact = digitalRead(SW420_PIN);
-        if (impact == HIGH && millis() - lastImpactTime > 1000) {
-            lastImpactTime = millis();
-            Serial.println("💥 IMPACTO DETECTADO (SW420)!");
-            acidente++;
-            pCharacteristic->setValue("SW420|IMPACTO");
-            pCharacteristic->notify();
-            notifyClients("SW420|IMPACTO|1");
-            sendPhotoWS();
-            delay(500);
-        }
-    }
-
-    // ===== CLASSIFICAÇÃO DO EVENTO =====
-    if (acidente >= 2 && acidente <= 3) {
-        notifyClients("ALERTA|POSSIVEL_ACIDENTE|" + String(acidente));
-        pCharacteristic->setValue("POSSIVEL_ACIDENTE|" + String(acidente));
+// ---------- LOOP ----------
+void loop(){
+  // Handle wifi connection requested via BLE
+  if (wifiRequest && !wifiConnecting){
+    Serial.println("Tentando conectar WiFi...");
+    WiFi.begin(wifiSSID.c_str(), wifiPASS.c_str());
+    wifiConnecting = true;
+    wifiStartAttempt = millis();
+  }
+  if (wifiConnecting){
+    if (WiFi.status() == WL_CONNECTED){
+      Serial.println("WiFi conectado: " + WiFi.localIP().toString());
+      // notify via BLE
+      if (pCharacteristic) {
+        String ok = "WIFI_OK|" + WiFi.localIP().toString();
+        pCharacteristic->setValue(ok.c_str());
         pCharacteristic->notify();
-        Serial.println("⚠️ POSSÍVEL ACIDENTE DETECTADO!");
-        acidente = 0;
-    } 
-    else if (acidente > 3 && acidente <= 5) {
-        notifyClients("ALERTA|ACIDENTE|" + String(acidente));
-        pCharacteristic->setValue("ACIDENTE|" + String(acidente));
+        // also send the credentials back to vehicle if needed
+        String wifiMsg = "WIFI|" + wifiSSID + "|" + wifiPASS;
+        pCharacteristic->setValue(wifiMsg.c_str());
         pCharacteristic->notify();
-        Serial.println("🚨 ACIDENTE CONFIRMADO!");
-        acidente = 0;
+      }
+      // start webserver + ws if not started
+      if (!wsStarted){
+        ws.onEvent([](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+          if(type == WS_EVT_CONNECT) Serial.println("WS cliente conectado");
+          if(type == WS_EVT_DISCONNECT) Serial.println("WS cliente desconectado");
+        });
+        server.addHandler(&ws);
+        server.begin();
+        wsStarted = true;
+        Serial.println("WebServer + WebSocket iniciados");
+      }
+      wifiRequest = false;
+      wifiConnecting = false;
+    } else {
+      if (millis() - wifiStartAttempt > WIFI_TIMEOUT){
+        Serial.println("Timeout ao conectar WiFi");
+        if (pCharacteristic){
+          pCharacteristic->setValue("WIFI_FAIL");
+          pCharacteristic->notify();
+        }
+        wifiRequest = false;
+        wifiConnecting = false;
+      }
     }
+  }
 
-    // ===== RESET APÓS 5s SEM NOVOS EVENTOS =====
-    if (millis() - lastResetTime > 5000 && acidente > 0) {
-        Serial.println("🔁 Resetando contador de acidente (sem novos eventos)...");
-        acidente = 0;
+  // Ultrassônico
+  if (sensorActive){
+    digitalWrite(TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
+    long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+    float distance_cm = (duration == 0) ? -1 : (duration / 2.0) * 0.0343; // MESMA FÓRMULA
+    if (distance_cm > 0 && distance_cm <= 100){
+      Serial.printf("Objeto a %.2f cm\n", distance_cm);
+      acidente++;
+      if (wsStarted) sendPhotoWS();
+      notifyClients("ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm,2));
+      delay(300);
     }
+  }
 
-    delay(200);
+  // MPU6050
+  if (mpuActive){
+    static bool mpuInit = false;
+    if (!mpuInit){
+      uint8_t status = mpu.begin();
+      if (status == 0){
+        mpu.calcOffsets(true, true);
+        mpuInit = true;
+        Serial.println("MPU iniciado");
+      } else {
+        Serial.printf("MPU begin status=%u\n", status);
+      }
+    }
+    if (mpuInit){
+      mpu.update();
+      float acc = sqrt(mpu.getAccX()*mpu.getAccX() + mpu.getAccY()*mpu.getAccY() + mpu.getAccZ()*mpu.getAccZ());
+      if (acc > 15.0){
+        Serial.println("Impacto MPU");
+        acidente++;
+        if (pCharacteristic){
+          pCharacteristic->setValue("MPU6050|BATIDA");
+          pCharacteristic->notify();
+        }
+        notifyClients("MPU6050|BATIDA|" + String(acc,2));
+        if (wsStarted) sendPhotoWS();
+        delay(400);
+      }
+    }
+  }
+
+  // SW420
+  if (sw420Active){
+    int v = digitalRead(SW420_PIN);
+    if (v == HIGH && millis() - lastImpactTime > 1000){
+      lastImpactTime = millis();
+      Serial.println("Impacto SW420");
+      acidente++;
+      if (pCharacteristic){
+        pCharacteristic->setValue("SW420|IMPACTO");
+        pCharacteristic->notify();
+      }
+      notifyClients("SW420|IMPACTO|1");
+      if (wsStarted) sendPhotoWS();
+      delay(400);
+    }
+  }
+
+  // Classificacao
+  if (acidente >= 2 && acidente <= 3){
+    notifyClients("ALERTA|POSSIVEL_ACIDENTE|" + String(acidente));
+    if (pCharacteristic){ pCharacteristic->setValue(("POSSIVEL_ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
+    Serial.println("POSSIVEL ACIDENTE");
+    acidente = 0;
+  } else if (acidente > 3 && acidente <= 5){
+    notifyClients("ALERTA|ACIDENTE|" + String(acidente));
+    if (pCharacteristic){ pCharacteristic->setValue(("ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
+    Serial.println("ACIDENTE CONFIRMADO");
+    acidente = 0;
+  }
+
+  // Reset contador se sem eventos
+  if (millis() - lastResetTime > 5000 && acidente > 0){
+    acidente = 0;
+    lastResetTime = millis();
+  }
+
+  delay(100);
 }
