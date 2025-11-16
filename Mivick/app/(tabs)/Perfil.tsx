@@ -14,39 +14,70 @@ const { width, height } = Dimensions.get('window');
 const BASE_URL = 'http://192.168.15.66:3000';
 const API_URL = `${BASE_URL}/app/mivick/user`;
 
+type UserData = {
+  nome: string;
+  telefone: string | null;
+  email: string;
+  foto: string | null;
+};
+
 export default function Perfil() {
-  const [userData, setUserData] = useState({ nome: '', telefone: '', email: '', foto: '' });
+  const [userData, setUserData] = useState<UserData>({ nome: '', telefone: '', email: '', foto: '' });
   const [googleUser, setGoogleUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Helper: tenta parsear JSON se for JSON, senão retorna texto
+  const safeParseResponse = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+    // não é JSON — retorna texto (útil para debugar HTML de erro)
+    const text = await response.text();
+    return { __raw: text };
+  };
+
   const fetchProfile = async () => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch(`${API_URL}/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserData({
-          nome: data.user.nome || '',
-          telefone: data.user.telefone || '',
-          email: data.user.email || '',
-          foto: data.user.foto ? `${BASE_URL}${data.user.foto}` : '',
-        });
-
-        if (!data.user.senha) {
-          setGoogleUser(true);
-        }
-
-      } else {
-        Alert.alert('Erro', data.error || 'Falha ao carregar perfil');
+      if (!token) {
+        Alert.alert('Erro', 'Token não encontrado. Faça login novamente.');
+        setLoading(false);
+        return;
       }
 
+      const response = await fetch(`${API_URL}/profile`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await safeParseResponse(response);
+
+      if (response.ok) {
+        // Se por algum motivo token JWT do Google foi usado e senha é null, marcamos googleUser
+        const serverUser = data.user || {};
+        setUserData({
+          nome: serverUser.nome || '',
+          telefone: serverUser.telefone || '',
+          email: serverUser.email || '',
+          foto: serverUser.foto ? `${BASE_URL}${serverUser.foto}` : '',
+        });
+
+        if (!serverUser.senha) {
+          setGoogleUser(true);
+        } else {
+          setGoogleUser(false);
+        }
+      } else {
+        // Se servidor retornou HTML ou texto, mostra para debug
+        const errMsg = data.error || data.message || data.__raw || 'Falha ao carregar perfil';
+        Alert.alert('Erro', errMsg);
+        console.error('Resposta inválida fetchProfile:', data);
+      }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
@@ -59,53 +90,65 @@ export default function Perfil() {
     fetchProfile();
   }, []);
 
- 
   const handleSave = async () => {
     try {
       setSaving(true);
       const token = await AsyncStorage.getItem('token');
-      if (!token) return;
-
-      const formData = new FormData();
-      formData.append('nome', userData.nome);
-      formData.append('telefone', userData.telefone);
-
-      // Usuário Google NÃO altera email
-      if (!googleUser) {
-        formData.append('email', userData.email);
+      if (!token) {
+        Alert.alert('Erro', 'Token não encontrado. Faça login novamente.');
+        setSaving(false);
+        return;
       }
 
-      
-      if (userData.foto && userData.foto.startsWith('file')) {
+      // monta FormData corretamente (sempre usar new FormData)
+      const formData = new FormData();
+      formData.append('nome', userData.nome || '');
+      formData.append('telefone', userData.telefone || '');
+
+      // Se usuário normal (não-google), permite enviar email
+      if (!googleUser) {
+        formData.append('email', userData.email || '');
+      }
+
+      // Se a foto for local (ex: file://...) é sinal de alteração — envia
+      // Caso a foto seja remoto (http://...) não anexa nada
+      if (userData.foto && (userData.foto as string).startsWith('file')) {
+        // @ts-ignore — RN FormData file object
         formData.append('foto', {
           uri: userData.foto,
           name: 'profile.jpg',
           type: 'image/jpeg',
-        } as any);
+        });
       }
 
-      const response = await fetch(`${API_URL}/update`, {
+      const response = await fetch(`${API_URL}/profile`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
+          // NÃO setar Content-Type aqui — fetch vai criar boundary automaticamente
         },
-        body: formData
+        body: formData,
       });
 
-      const data = await response.json();
+      const data = await safeParseResponse(response);
 
       if (response.ok) {
-
+        const serverUser = data.user || {};
         setUserData(prev => ({
           ...prev,
-          foto: data.user.foto ? `${BASE_URL}${data.user.foto}` : ''
+          // recebe caminho unix /uploads/arquivo.jpg do backend; converte pra URL completa
+          foto: serverUser.foto ? `${BASE_URL}${serverUser.foto}` : prev.foto,
+          nome: serverUser.nome ?? prev.nome,
+          telefone: serverUser.telefone ?? prev.telefone,
+          email: serverUser.email ?? prev.email,
         }));
 
         Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
       } else {
-        Alert.alert('Erro', data.error || 'Falha ao atualizar perfil');
+        const errMsg = data.error || data.message || data.__raw || 'Falha ao atualizar perfil';
+        Alert.alert('Erro', errMsg);
+        console.error('Resposta inválida handleSave:', data);
       }
-
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
@@ -114,18 +157,14 @@ export default function Perfil() {
     }
   };
 
-
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#000' }}>
         <ActivityIndicator size="large" color="#F85200" />
-        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>
-          Carregando perfil...
-        </Text>
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>Carregando perfil...</Text>
       </View>
     );
   }
-
 
   return (
     <FontProvider>
@@ -153,7 +192,7 @@ export default function Perfil() {
             style={{ width: width * 0.27, height: width * 0.27 }}
             showEditIcon
             onChangePhoto={(uri: string) => setUserData(prev => ({ ...prev, foto: uri }))}
-            imageUri={userData.foto}
+            imageUri={userData.foto ?? ''}
           />
         </View>
 
@@ -178,22 +217,19 @@ export default function Perfil() {
         />
 
         {/* CAMPOS */}
-        {(['nome', 'telefone', 'email'] as (keyof typeof userData)[]).map((campo, index) => (
-          <View key={index} style={{ width: '90%', alignSelf: 'center', marginBottom: height * 0.05 }}>
+        {(['nome', 'telefone', 'email'] as (keyof UserData)[]).map((campo, index) => (
+          <View key={index} style={{ width: '90%', alignSelf: 'center', marginBottom: height * 0.06 }}>
             <View
               style={{
                 position: 'absolute',
                 top: -height * 0.015,
                 left: width * 0.12,
-                backgroundColor: 'transparent',
+                backgroundColor: '#000',
                 paddingHorizontal: width * 0.015,
                 zIndex: 1,
               }}
             >
-              <FirstSubTitle
-                text={campo.charAt(0).toUpperCase() + campo.slice(1)}
-                style={{ fontSize: Math.min(width * 0.035, 15), color: '#fff' }}
-              />
+              <FirstSubTitle text={campo.charAt(0).toUpperCase() + campo.slice(1)} style={{ fontSize: Math.min(width * 0.035, 15), color: '#fff' }} />
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -211,14 +247,14 @@ export default function Perfil() {
                   borderColor: '#F85200',
                   borderWidth: 2,
                   color: '#fff',
-                  height: height * 0.055,
+                  height: height * 0.069,
                   paddingHorizontal: width * 0.025,
                   borderRadius: 6,
                   fontSize: Math.min(width * 0.04, 16),
                 }}
                 placeholderTextColor="#ccc"
-                value={userData[campo]}
-                editable={campo !== 'email' || !googleUser} // 👈 BLOQUEIA EMAIL GOOGLE
+                value={(userData[campo] ?? '') as string}
+                editable={!(campo === 'email' && googleUser)}
                 onChangeText={text => setUserData(prev => ({ ...prev, [campo]: text }))}
               />
             </View>

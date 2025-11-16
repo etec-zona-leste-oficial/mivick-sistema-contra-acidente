@@ -28,7 +28,7 @@ export default function Login() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [auth, setAuth] = useState<User | null>(null);
-  const API_URL = "http://192.168.1.7:3000" //Backend
+  const API_URL = "http://192.168.15.66:3000" //Backend
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
