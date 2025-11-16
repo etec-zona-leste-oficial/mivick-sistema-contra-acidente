@@ -85,6 +85,12 @@ export default function TabsLayout() {
           href: null, // 👈 impede que apareça como aba
           }}
         />
+      <Tabs.Screen
+          name="HistoricoAlerta"
+          options={{
+          href: null, // 👈 impede que apareça como aba
+          }}
+        />
 
       </Tabs>
       
