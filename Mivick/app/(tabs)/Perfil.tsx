@@ -10,22 +10,25 @@ import { FirstButton } from '@/components/FirstButton';
 import FontProvider from '@/components/providers/FontProvider';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://192.168.15.66:3000/app/mivick/user';
+
+const BASE_URL = 'http://192.168.15.66:3000';
+const API_URL = `${BASE_URL}/app/mivick/user`;
 
 export default function Perfil() {
   const [userData, setUserData] = useState({ nome: '', telefone: '', email: '', foto: '' });
+  const [googleUser, setGoogleUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Buscar perfil
   const fetchProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/profile`, {
+      const response = await fetch(`${API_URL}/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await response.json();
 
       if (response.ok) {
@@ -33,11 +36,17 @@ export default function Perfil() {
           nome: data.user.nome || '',
           telefone: data.user.telefone || '',
           email: data.user.email || '',
-          foto: data.user.foto ? `${API_URL.replace('/user', '')}${data.user.foto}` : '',
+          foto: data.user.foto ? `${BASE_URL}${data.user.foto}` : '',
         });
+
+        if (!data.user.senha) {
+          setGoogleUser(true);
+        }
+
       } else {
         Alert.alert('Erro', data.error || 'Falha ao carregar perfil');
       }
+
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
@@ -50,7 +59,7 @@ export default function Perfil() {
     fetchProfile();
   }, []);
 
-  // Atualizar perfil (com upload da foto)
+ 
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -60,8 +69,13 @@ export default function Perfil() {
       const formData = new FormData();
       formData.append('nome', userData.nome);
       formData.append('telefone', userData.telefone);
-      formData.append('email', userData.email);
 
+      // Usuário Google NÃO altera email
+      if (!googleUser) {
+        formData.append('email', userData.email);
+      }
+
+      
       if (userData.foto && userData.foto.startsWith('file')) {
         formData.append('foto', {
           uri: userData.foto,
@@ -70,25 +84,28 @@ export default function Perfil() {
         } as any);
       }
 
-      const response = await fetch(`${API_URL}/profile`, {
+      const response = await fetch(`${API_URL}/update`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: formData
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+
         setUserData(prev => ({
           ...prev,
-          foto: data.user.foto ? `${API_URL.replace('/user', '')}${data.user.foto}` : prev.foto,
+          foto: data.user.foto ? `${BASE_URL}${data.user.foto}` : ''
         }));
+
+        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
       } else {
         Alert.alert('Erro', data.error || 'Falha ao atualizar perfil');
       }
+
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
@@ -97,14 +114,18 @@ export default function Perfil() {
     }
   };
 
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#000' }}>
         <ActivityIndicator size="large" color="#F85200" />
-        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>Carregando perfil...</Text>
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>
+          Carregando perfil...
+        </Text>
       </View>
     );
   }
+
 
   return (
     <FontProvider>
@@ -116,7 +137,7 @@ export default function Perfil() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* FOTO DE PERFIL */}
+        {/* FOTO */}
         <View
           style={{
             alignSelf: 'center',
@@ -164,7 +185,7 @@ export default function Perfil() {
                 position: 'absolute',
                 top: -height * 0.015,
                 left: width * 0.12,
-                backgroundColor: '#000',
+                backgroundColor: 'transparent',
                 paddingHorizontal: width * 0.015,
                 zIndex: 1,
               }}
@@ -182,6 +203,7 @@ export default function Perfil() {
                 color="#F85200"
                 style={{ marginRight: width * 0.03 }}
               />
+
               <FirstTextField
                 style={{
                   flex: 1,
@@ -196,13 +218,13 @@ export default function Perfil() {
                 }}
                 placeholderTextColor="#ccc"
                 value={userData[campo]}
+                editable={campo !== 'email' || !googleUser} // 👈 BLOQUEIA EMAIL GOOGLE
                 onChangeText={text => setUserData(prev => ({ ...prev, [campo]: text }))}
               />
             </View>
           </View>
         ))}
 
-        {/* BOTÃO SALVAR */}
         <FirstButton
           title={saving ? 'Salvando...' : 'Salvar'}
           customStyle={{

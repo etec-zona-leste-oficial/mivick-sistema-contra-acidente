@@ -86,7 +86,7 @@ export default function Login() {
         const data = await backendResponse.json();
 
         if (backendResponse.ok) {
-          console.log("✅ Token do backend:", data.token);
+          console.log("Token do backend:", data.token);
           console.log("Google ID Token:", idToken);
           await AsyncStorage.setItem("token", data.token);
           router.push("./Home");
