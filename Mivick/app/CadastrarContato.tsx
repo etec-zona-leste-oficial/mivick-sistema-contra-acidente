@@ -1,11 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { View, ScrollView, Alert, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { HeaderComLogin } from '../components/HeaderComLogin';
 import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
+
 import { styles } from '../components/styles/styleCadastrarContato';
 
 const { width, height } = Dimensions.get('window');
@@ -15,21 +18,18 @@ export default function CadastrarContato() {
     const [sobrenome, setSobrenome] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState<string | null>(null);
 
+    // Resetar campos quando abrir a tela novamente
     useFocusEffect(
         useCallback(() => {
             setNome('');
             setSobrenome('');
             setTelefone('');
             setEmail('');
-            setValue(null);
-            setOpen(false);
         }, [])
     );
 
-    // Função de cadastrar
+    // Função de cadastro
     const handleCadastrarContato = async () => {
         try {
             if (!nome || !telefone || !email) {
@@ -37,7 +37,12 @@ export default function CadastrarContato() {
                 return;
             }
 
-            const token = 'SEU_TOKEN_JWT_AQUI'; 
+            const token = await AsyncStorage.getItem("token");
+
+            if (!token) {
+                Alert.alert("Erro", "Usuário não autenticado.");
+                return;
+            }
 
             const response = await fetch('http://192.168.1.7:3000/app/mivick/contact', {
                 method: 'POST',
@@ -52,7 +57,12 @@ export default function CadastrarContato() {
                 }),
             });
 
-            const data = await response.json();
+            let data: any = {};
+            try {
+                data = await response.json();
+            } catch (error) {
+                console.log("Erro ao converter JSON:", error);
+            }
 
             if (response.ok) {
                 Alert.alert('Sucesso', data.message || 'Contato cadastrado!');
@@ -61,10 +71,10 @@ export default function CadastrarContato() {
                 setTelefone('');
                 setEmail('');
             } else {
-                Alert.alert('Erro', data.message || 'Falha ao cadastrar contato.');
+                Alert.alert('Erro', data.error || "Falha ao cadastrar contato.");
             }
         } catch (error) {
-            console.error(error);
+            console.error("Erro geral:", error);
             Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
         }
     };
@@ -78,26 +88,27 @@ export default function CadastrarContato() {
                     style={{ fontSize: 35, marginBottom: 10, marginTop: 15, paddingHorizontal: 12 }}
                 />
 
-                <View style={{
-                    height: 2,
-                    backgroundColor: '#F85200',
-                    width: '106%',
-                    alignSelf: 'center',
-                    marginVertical: 12,
-                }} />
+                <View
+                    style={{
+                        height: 2,
+                        backgroundColor: '#F85200',
+                        width: '106%',
+                        alignSelf: 'center',
+                        marginVertical: 12,
+                    }}
+                />
 
+                {/* Foto ainda não implementada no backend */}
                 <PerfilFoto
                     style={{ alignSelf: 'center', marginBottom: 22, paddingHorizontal: 12, marginTop: 8 }}
                     showEditIcon={true}
-                    onEditPress={() => console.log('Editar foto')}
+                    onEditPress={() => Alert.alert("Em breve", "Upload de foto ainda não está ativo.")}
                 />
 
                 <FirstTextField placeholder="Nome" style={{ marginBottom: 12 }} value={nome} onChangeText={setNome} />
                 <FirstTextField placeholder="Sobrenome" style={{ marginBottom: 12 }} value={sobrenome} onChangeText={setSobrenome} />
                 <FirstTextField placeholder="Telefone" style={{ marginBottom: 12 }} value={telefone} onChangeText={setTelefone} maskTelefone={true} />
                 <FirstTextField placeholder="Email" style={{ marginBottom: 12 }} value={email} onChangeText={setEmail} />
-
-            
 
                 <FirstButton
                     title="Cadastrar"
