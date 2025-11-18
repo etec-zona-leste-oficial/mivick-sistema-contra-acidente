@@ -9,7 +9,7 @@ import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 
-import { styles } from '../../components/styles/styleEditarContato';;
+import { styles } from '../components/styles/styleEditarContato';
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,7 +18,10 @@ const API_URL = `${BASE_URL}/app/mivick/contact`;
 
 export default function EditarContato() {
     const router = useRouter();
-    const { id } = useLocalSearchParams(); 
+
+    // ⭐ CAPTURA CORRETA DO PARAMETRO
+    const { id_contato } = useLocalSearchParams();
+    console.log("ID recebido ->", id_contato);
 
     const [nome, setNome] = useState('');
     const [sobrenome, setSobrenome] = useState('');
@@ -31,19 +34,30 @@ export default function EditarContato() {
             try {
                 const token = await AsyncStorage.getItem("token");
 
-                const response = await fetch(`${API_URL}/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                const response = await fetch(`${API_URL}/${id_contato}`, {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
 
-                const data = await response.json();
+                const contentType = response.headers.get("content-type") || "";
+
+                let data;
+
+                // ⛑️ Evita erro JSON “Unexpected <”
+                if (contentType.includes("application/json")) {
+                    data = await response.json();
+                } else {
+                    const raw = await response.text();
+                    console.log("⚠️ RESPOSTA RAW:", raw);
+                    Alert.alert("Erro", "Resposta inválida do servidor.");
+                    return;
+                }
 
                 if (!response.ok) {
                     Alert.alert("Erro", "Não foi possível carregar o contato");
                     return;
                 }
 
+                // Quebra nome
                 const fullName = data.contact.nome.split(" ");
                 const firstName = fullName[0];
                 const lastName = fullName.slice(1).join(" ");
@@ -52,7 +66,9 @@ export default function EditarContato() {
                 setSobrenome(lastName);
                 setTelefone(data.contact.telefone);
                 setEmail(data.contact.email);
-                setFotoUri(data.contact.foto ? `${BASE_URL}${data.contact.foto}` : null);
+                setFotoUri(
+                    data.contact.foto ? `${BASE_URL}${data.contact.foto}` : null
+                );
 
             } catch (err) {
                 console.error(err);
@@ -61,13 +77,12 @@ export default function EditarContato() {
         };
 
         loadContactData();
-    }, [id]);
+    }, [id_contato]);
 
     const safeParseResponse = async (response: Response) => {
         const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-            return response.json();
-        }
+        if (contentType.includes('application/json')) return response.json();
+
         const text = await response.text();
         return { __raw: text };
     };
@@ -86,9 +101,9 @@ export default function EditarContato() {
             formData.append('telefone', telefone);
             formData.append('email', email);
 
-            // Atualiza foto se o usuário trocar
+            // Troca de foto
             if (fotoUri && fotoUri.startsWith("file")) {
-                // @ts-ignore - React Native File
+                // @ts-ignore
                 formData.append("foto", {
                     uri: fotoUri,
                     type: 'image/jpeg',
@@ -96,11 +111,9 @@ export default function EditarContato() {
                 });
             }
 
-            const response = await fetch(`${API_URL}/${id}`, {
+            const response = await fetch(`${API_URL}/${id_contato}`, {
                 method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
 
@@ -108,9 +121,9 @@ export default function EditarContato() {
 
             if (response.ok) {
                 Alert.alert("Sucesso", data.message || "Contato atualizado!");
-                router.push('/Contatos');
+                router.push("/Contatos");
             } else {
-                Alert.alert("Erro", data.error || data.message || "Falha ao atualizar contato");
+                Alert.alert("Erro", data.error || "Falha ao atualizar contato");
             }
 
         } catch (error) {
@@ -190,7 +203,7 @@ export default function EditarContato() {
                     onPress={handleAtualizarContato}
                     customStyle={{
                         marginTop: height * 0.12,
-                        height: height * 0.070,
+                        height: height * 0.075,
                         width: width * 0.9,
                         alignSelf: 'center',
                     }}

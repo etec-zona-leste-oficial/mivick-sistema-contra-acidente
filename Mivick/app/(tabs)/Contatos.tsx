@@ -27,7 +27,6 @@ export default function ContatoScreen() {
   const { height, width } = Dimensions.get('window');
 
   const [contacts, setContacts] = useState<Contact[]>([]);
-
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
 
@@ -40,9 +39,7 @@ export default function ContatoScreen() {
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
@@ -74,11 +71,9 @@ export default function ContatoScreen() {
       });
 
       if (response.ok) {
-        setContacts((prev) =>
-          prev.filter((c) => c.id_contato !== selectedContactId)
-        );
+        setContacts(prev => prev.filter(c => c.id_contato !== selectedContactId));
       } else {
-        console.log("Erro ao excluir contato.");
+        console.log("Erro ao excluir.");
       }
     } catch (err) {
       console.log("Erro:", err);
@@ -90,6 +85,7 @@ export default function ContatoScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
       <HeaderComLogin />
+
       <ScrollView
         style={[styles.container, { paddingHorizontal: width * 0.04 }]}
         showsVerticalScrollIndicator={false}
@@ -131,7 +127,7 @@ export default function ContatoScreen() {
               alignSelf: 'center',
             }}
           >
-            {/* Foto + nome */}
+            {/* Foto + Nome */}
             <View
               style={{
                 flexDirection: 'row',
@@ -142,15 +138,11 @@ export default function ContatoScreen() {
             >
               <PerfilFoto
                 size={width * 0.13}
-                imageUri={
-                  contact.foto
-                    ? `${BASE_URL}${contact.foto}`
-                    : ""
-                }
+                imageUri={contact.foto ? `${BASE_URL}${contact.foto}` : ""}
                 style={{ borderRadius: (width * 0.13) / 2 }}
               />
 
-              {/* Nome + sobrenome */}
+              {/* Nome + Sobrenome */}
               <View style={{ maxWidth: width * 0.45, flexShrink: 1, marginRight: width * 0.05 }}>
                 <FirstTitle
                   text={`${contact.nome} ${contact.sobrenome}`}
@@ -162,31 +154,34 @@ export default function ContatoScreen() {
 
             </View>
 
-            
-
             {/* Botões */}
             <View style={{ flexDirection: 'row', gap: width * 0.03 }}>
-              {/* ícone de editar */}
-            {
-              /* 
-                 <View style={{ flexDirection: 'row', gap: width * 0.03 }}>
-              <View
-                style={{
-                  backgroundColor: '#F85200',
-                  width: width * 0.11,
-                  height: width * 0.11,
-                  borderRadius: (width * 0.11) / 2,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+
+              {/* Ícone EDITAR (de volta e funcional) */}
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/EditarContato",
+                    params: { id_contato: String(contact.id_contato) }
+                  })
+                }
               >
-                <FontAwesome name="pencil" size={width * 0.045} color="#fff" />
-              </View>
-              */
-            }
-              
-              
-              {/* Ícone excluir */}
+                <View
+                  style={{
+                    backgroundColor: '#F85200',
+                    width: width * 0.11,
+                    height: width * 0.11,
+                    borderRadius: (width * 0.11) / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <FontAwesome name="pencil" size={width * 0.045} color="#fff" />
+                </View>
+              </TouchableOpacity>
+
+
+              {/* Ícone EXCLUIR */}
               <TouchableOpacity
                 onPress={() => {
                   setSelectedContactId(contact.id_contato);
@@ -210,6 +205,7 @@ export default function ContatoScreen() {
           </ContactCard>
         ))}
 
+        {/* Botão adicionar */}
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('/CadastrarContato')}
