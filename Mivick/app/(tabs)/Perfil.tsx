@@ -23,24 +23,40 @@ type UserData = {
 };
 
 export default function Perfil() {
+  /** Armazena os dados do usuário carregados do backend */
   const [userData, setUserData] = useState<UserData>({ nome: '', telefone: '', email: '', foto: '' });
+
+  /** Indica se a conta é originada do Google (sem senha) */
   const [googleUser, setGoogleUser] = useState(false);
+
+  /** Estado de carregamento inicial */
   const [loading, setLoading] = useState(true);
+
+  /** Estado de salvamento ao enviar alterações */
   const [saving, setSaving] = useState(false);
 
-  // 🔥 Novo estado — controla se o perfil pode ser editado
+  /** Controla se o usuário está no modo de edição */
   const [editing, setEditing] = useState(false);
 
-  // BACKEND : 
-
+  /* =========================================================
+   * Função utilitária para tratar respostas do servidor que
+   * podem vir com JSON ou texto puro.
+   * =========================================================
+   */
   const safeParseResponse = async (response: Response) => {
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('application/json')) return response.json();
     return { __raw: await response.text() };
   };
 
+  /* =========================================================
+   * Carrega os dados de perfil do servidor usando o token
+   * salvo no dispositivo.
+   * =========================================================
+   */
   const fetchProfile = async () => {
     setLoading(true);
+
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
@@ -57,6 +73,8 @@ export default function Perfil() {
 
       if (response.ok) {
         const u = data.user || {};
+
+        // Preenche o estado com os dados recebidos
         setUserData({
           nome: u.nome || '',
           telefone: u.telefone || '',
@@ -75,10 +93,16 @@ export default function Perfil() {
     }
   };
 
+  /** Carrega o perfil ao abrir a tela */
   useEffect(() => {
     fetchProfile();
   }, []);
 
+  /* =========================================================
+   * Envia as alterações do perfil para o backend.
+   * Prepara FormData pois pode haver envio de imagem.
+   * =========================================================
+   */
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -90,11 +114,12 @@ export default function Perfil() {
       formData.append('nome', userData.nome || '');
       formData.append('telefone', userData.telefone || '');
 
+      // Email só pode ser alterado se não for conta Google
       if (!googleUser) {
         formData.append('email', userData.email || '');
       }
 
-      // Foto só envia se for nova (file://)
+      // Envia a foto somente se ela for um arquivo novo
       if (userData.foto && userData.foto.startsWith('file')) {
         // @ts-ignore
         formData.append('foto', {
@@ -114,6 +139,8 @@ export default function Perfil() {
 
       if (response.ok) {
         const u = data.user || {};
+
+        // Atualiza dados no estado
         setUserData(prev => ({
           ...prev,
           foto: u.foto ? `${BASE_URL}${u.foto}` : prev.foto,
@@ -122,9 +149,10 @@ export default function Perfil() {
           email: u.email ?? prev.email,
         }));
 
-        setEditing(false); // 🔥 Fecha modo edição
+        // Desativa o modo edição após salvar
+        setEditing(false);
 
-        Alert.alert('Sucesso', 'Perfil atualizado!');
+        Alert.alert('Sucesso', 'Perfil atualizado.');
       } else {
         Alert.alert('Erro', data.error || data.__raw || 'Falha ao atualizar');
       }
@@ -135,17 +163,25 @@ export default function Perfil() {
     }
   };
 
+  /* =========================================================
+   * Tela de carregamento enquanto os dados estão sendo buscados
+   * =========================================================
+   */
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#000' }}>
         <ActivityIndicator size="large" color="#F85200" />
-        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>Carregando perfil...</Text>
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>
+          Carregando perfil...
+        </Text>
       </View>
     );
   }
 
-
-  // UI PRINCIPAL DESIGN
+  /* =========================================================
+   * Renderização principal da interface
+   * =========================================================
+   */
   return (
     <FontProvider>
       <ScrollView
@@ -157,11 +193,7 @@ export default function Perfil() {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* DEGRADÊ */}
-
-
-
-        {/* FOTO */}
+        {/* Área da foto de perfil */}
         <View
           style={{
             alignSelf: 'center',
@@ -176,12 +208,14 @@ export default function Perfil() {
           <PerfilFoto
             style={{ width: width * 0.27, height: width * 0.27 }}
             showEditIcon={editing}
-            onChangePhoto={(uri: string) => editing && setUserData(prev => ({ ...prev, foto: uri }))}
+            onChangePhoto={(uri: string) =>
+              editing && setUserData(prev => ({ ...prev, foto: uri }))
+            }
             imageUri={userData.foto ?? ''}
           />
         </View>
 
-        {/* BOTÃO EDITAR */}
+        {/* Botão que ativa o modo de edição */}
         {!editing && (
           <TouchableOpacity onPress={() => setEditing(true)}>
             <FirstSubTitle
@@ -196,9 +230,7 @@ export default function Perfil() {
           </TouchableOpacity>
         )}
 
-      
-
-        {/* Quando está editando, troca para texto informativo */}
+        {/* Texto exibido quando o modo edição está ativo */}
         {editing && (
           <FirstSubTitle
             text="Edição ativada"
@@ -211,6 +243,7 @@ export default function Perfil() {
           />
         )}
 
+        {/* Linha divisória */}
         <View
           style={{
             height: 1.5,
@@ -221,9 +254,10 @@ export default function Perfil() {
           }}
         />
 
-        {/* CAMPOS */}
+        {/* Campos do formulário (Nome, Telefone, Email) */}
         {(['nome', 'telefone', 'email'] as (keyof UserData)[]).map((campo, index) => (
           <View key={index} style={{ width: '90%', alignSelf: 'center', marginBottom: height * 0.06 }}>
+            {/* Rótulo acima do campo */}
             <View
               style={{
                 position: 'absolute',
@@ -240,9 +274,16 @@ export default function Perfil() {
               />
             </View>
 
+            {/* Campo com ícone */}
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <FontAwesome
-                name={campo === 'nome' ? 'user' : campo === 'telefone' ? 'phone' : 'envelope'}
+                name={
+                  campo === 'nome'
+                    ? 'user'
+                    : campo === 'telefone'
+                    ? 'phone'
+                    : 'envelope'
+                }
                 size={Math.min(width * 0.06, 26)}
                 color="#F85200"
                 style={{ marginRight: width * 0.03 }}
@@ -258,18 +299,20 @@ export default function Perfil() {
                   paddingHorizontal: width * 0.025,
                   borderRadius: 6,
                   fontSize: Math.min(width * 0.04, 16),
-                  color: editing ? '#fff' : '#999',
+                  color: editing ? '#fff' : '#999', // cinza fora do modo edição
                 }}
                 placeholderTextColor="#ccc"
                 value={(userData[campo] ?? '') as string}
                 editable={editing && !(campo === 'email' && googleUser)}
-                onChangeText={text => setUserData(prev => ({ ...prev, [campo]: text }))}
+                onChangeText={text =>
+                  setUserData(prev => ({ ...prev, [campo]: text }))
+                }
               />
             </View>
           </View>
         ))}
 
-        {/* BOTÃO SALVAR — só aparece no modo edição */}
+        {/* Botão salvar exibido somente durante edição */}
         {editing && (
           <FirstButton
             title={saving ? 'Salvando...' : 'Salvar'}
