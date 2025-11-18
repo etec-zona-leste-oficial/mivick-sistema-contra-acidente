@@ -1,4 +1,6 @@
-// Imports
+// =============================================================
+// Imports de bibliotecas e dependências externas
+// =============================================================
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -6,7 +8,9 @@ import { Dimensions, SafeAreaView, Text, TouchableOpacity, View, Alert } from 'r
 import { GoogleSignin, User, isSuccessResponse } from "@react-native-google-signin/google-signin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Componentes
+// =============================================================
+// Importação de componentes customizados
+// =============================================================
 import { FirstButton } from '@/components/FirstButton';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
@@ -15,7 +19,10 @@ import { styles } from '../components/styles/styleLogin';
 
 const { height } = Dimensions.get("window");
 
-// ---- Google Signin Configuração ----
+// =============================================================
+// Configuração Google Sign-In
+// Obrigatório para permitir login via Google
+// =============================================================
 GoogleSignin.configure({
   iosClientId: "361690709955-92l95olnj2mbh7mo2d3ube4sbk9eran8.apps.googleusercontent.com",
   webClientId: "361690709955-sqe5mbar1mq4bp5vu9e1b2b9m07jkqnj.apps.googleusercontent.com",
@@ -24,29 +31,37 @@ GoogleSignin.configure({
 export default function Login() {
   const router = useRouter();
 
+  // Estado para checkbox dos termos de uso
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+
+  // Estado com dados do usuário do Google (quando aplicável)
   const [auth, setAuth] = useState<User | null>(null);
 
+  // URL base da API
   const API_URL = "http://192.168.15.66:3000";
 
+  // Estados controlando os inputs do formulário
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  // -----------------------------
-  // Login padrão do usuário
-  // -----------------------------
+  // =============================================================
+  // Login padrão utilizando email e senha
+  // =============================================================
   async function handleLogin() {
+    // Validação básica dos campos obrigatórios
     if (!email || !senha) {
       Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
+    // Termos de uso obrigatórios
     if (!agreeToTerms) {
       Alert.alert("Atenção", "Você precisa concordar com os termos de uso!");
       return;
     }
 
     try {
+      // Requisição ao backend para autenticação
       const response = await fetch(`${API_URL}/app/mivick/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,12 +70,16 @@ export default function Login() {
 
       const data = await response.json();
 
+      // Tratamento de erro de autenticação
       if (!response.ok) {
         Alert.alert("Erro", data.error || "Falha ao fazer login");
         return;
       }
 
+      // Armazenando token JWT localmente
       await AsyncStorage.setItem("token", data.token);
+
+      // Redirecionamento após login bem-sucedido
       router.push("./Home");
 
     } catch (error) {
@@ -69,19 +88,25 @@ export default function Login() {
     }
   }
 
-  // -----------------------------
-  // Login com Google
-  // -----------------------------
+  // =============================================================
+  // Login via Google
+  // Autenticação externa + backend
+  // =============================================================
   async function handleGoogleSignIn() {
     try {
+      // Verifica se o dispositivo tem os serviços necessários
       await GoogleSignin.hasPlayServices();
+
+      // Inicia processo de login Google
       const response = await GoogleSignin.signIn();
 
+      // Se não for sucesso (cancelado ou falhou)
       if (!isSuccessResponse(response)) {
         console.warn("Login cancelado ou falhou.");
         return;
       }
 
+      // Obtém tokens do Google
       const tokens = await GoogleSignin.getTokens();
 
       if (!tokens.idToken) {
@@ -89,7 +114,7 @@ export default function Login() {
         return;
       }
 
-      // Enviando o token ao backend
+      // Envia o ID Token ao backend para validação e criação/autenticação do usuário
       const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,7 +128,10 @@ export default function Login() {
         return;
       }
 
+      // Salva token JWT retornado pelo backend
       await AsyncStorage.setItem("token", data.token);
+
+      // Redireciona para Home
       router.push("./Home");
 
     } catch (error) {
@@ -112,16 +140,21 @@ export default function Login() {
     }
   }
 
-  // -----------------------------
-  // UI
-  // -----------------------------
+  // =============================================================
+  // Interface da tela de login
+  // =============================================================
   return (
     <SafeAreaView style={styles.container}>
+      
+      {/* Cabeçalho da aplicação */}
       <Header />
+
       <View style={styles.content}>
         
+        {/* Título da tela */}
         <FirstTitle text="Login" fontSize={35} />
 
+        {/* Campo de email */}
         <FirstTextField
           placeholder="Email"
           value={email}
@@ -131,6 +164,7 @@ export default function Login() {
           style={[styles.textField, { marginTop: height * 0.06 }]}
         />
 
+        {/* Campo de senha */}
         <FirstTextField
           placeholder="Senha"
           secureTextEntry
@@ -139,12 +173,14 @@ export default function Login() {
           style={[styles.textField]}
         />
 
+        {/* Botão de login padrão */}
         <FirstButton
           title="Login"
           onPress={handleLogin}
           customStyle={styles.loginButton}
         />
 
+        {/* Divisor visual */}
         <View
           style={{
             height: 2,
@@ -154,6 +190,7 @@ export default function Login() {
           }}
         />
 
+        {/* Botão de login com Google */}
         <FirstButton
           title="Faça Login com o Google"
           onPress={handleGoogleSignIn}
@@ -162,17 +199,19 @@ export default function Login() {
           icon={<FontAwesome name="google" size={24} color="#fff" />}
         />
 
-        {/* Checkbox Termos */}
+        {/* Área do checkbox dos termos */}
         <View style={styles.checkboxContainer}>
           <TouchableOpacity
             style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
             onPress={() => setAgreeToTerms(!agreeToTerms)}
           >
-            {agreeToTerms && <FontAwesome name="check" size={16} color="#FFFFFF" />}
+            {agreeToTerms && (
+              <FontAwesome name="check" size={16} color="#FFFFFF" />
+            )}
           </TouchableOpacity>
 
           <Text style={styles.checkboxText}>
-            Ao clicar, você concorda com os{' '}
+            Ao clicar, você concorda com os{" "}
             <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
           </Text>
         </View>
