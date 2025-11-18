@@ -8,28 +8,49 @@ import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
+import { useRouter } from 'expo-router';
 
 import { styles } from '../components/styles/styleCadastrarContato';
 
 const { width, height } = Dimensions.get('window');
 
+const BASE_URL = 'http://192.168.15.66:3000';
+const API_URL = `${BASE_URL}/app/mivick/contact`;
+
 export default function CadastrarContato() {
+    const router = useRouter();
     const [nome, setNome] = useState('');
     const [sobrenome, setSobrenome] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
+    const [fotoUri, setFotoUri] = useState<string | null>(null);
 
-    // Resetar campos quando abrir a tela novamente
+    const safeParseResponse = async (response: Response) => {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            return response.json();
+        }
+        const text = await response.text();
+        return { __raw: text };
+    };
+
+    // Resetar tudo ao voltar para a tela
     useFocusEffect(
         useCallback(() => {
-            setNome('');
-            setSobrenome('');
-            setTelefone('');
-            setEmail('');
+            // Não zera ao entrar
+
+            return () => {
+                // Reseta APENAS ao sair da tela
+                setNome('');
+                setSobrenome('');
+                setTelefone('');
+                setEmail('');
+                setFotoUri(null);
+            };
         }, [])
     );
 
-    // Função de cadastro
+
     const handleCadastrarContato = async () => {
         try {
             if (!nome || !telefone || !email) {
@@ -44,35 +65,44 @@ export default function CadastrarContato() {
                 return;
             }
 
-            const response = await fetch('http://192.168.1.7:3000/app/mivick/contact', {
-                method: 'POST',
+            const formData = new FormData();
+            formData.append('nome', `${nome} ${sobrenome}`);
+            formData.append('telefone', telefone);
+            formData.append('email', email);
+
+            if (fotoUri && fotoUri.startsWith("file")) {
+                // @ts-ignore - RN File
+                formData.append("foto", {
+                    uri: fotoUri,
+                    type: "image/jpeg",
+                    name: "contato.jpg",
+                });
+            }
+            const response = await fetch(API_URL, {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    nome: `${nome} ${sobrenome}`,
-                    telefone,
-                    email,
-                }),
+                body: formData,
             });
 
-            let data: any = {};
-            try {
-                data = await response.json();
-            } catch (error) {
-                console.log("Erro ao converter JSON:", error);
-            }
+
+            const data = await safeParseResponse(response);
 
             if (response.ok) {
-                Alert.alert('Sucesso', data.message || 'Contato cadastrado!');
+                Alert.alert("Sucesso", data.message || "Contato cadastrado!");
+
                 setNome('');
                 setSobrenome('');
                 setTelefone('');
                 setEmail('');
+                setFotoUri(null);
+                router.push('./contatos');
             } else {
-                Alert.alert('Erro', data.error || "Falha ao cadastrar contato.");
+                Alert.alert("Erro", data.error || data.message || "Falha ao cadastrar contato");
+                console.error("Erro:", data);
             }
+
         } catch (error) {
             console.error("Erro geral:", error);
             Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
@@ -82,7 +112,8 @@ export default function CadastrarContato() {
     return (
         <View style={{ flex: 1 }}>
             <HeaderComLogin />
-            <ScrollView style={styles.container}>
+
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
                 <FirstTitle
                     text="Cadastre um contato"
                     style={{ fontSize: 35, marginBottom: 10, marginTop: 15, paddingHorizontal: 12 }}
@@ -98,17 +129,46 @@ export default function CadastrarContato() {
                     }}
                 />
 
-                {/* Foto ainda não implementada no backend */}
                 <PerfilFoto
-                    style={{ alignSelf: 'center', marginBottom: 22, paddingHorizontal: 12, marginTop: 8 }}
+                    style={{
+                        alignSelf: 'center',
+                        marginBottom: 22,
+                        paddingHorizontal: 12,
+                        marginTop: 8,
+                    }}
                     showEditIcon={true}
-                    onEditPress={() => Alert.alert("Em breve", "Upload de foto ainda não está ativo.")}
+                    onChangePhoto={(uri) => setFotoUri(uri)}
+                    imageUri={fotoUri || ""}
                 />
 
-                <FirstTextField placeholder="Nome" style={{ marginBottom: 12 }} value={nome} onChangeText={setNome} />
-                <FirstTextField placeholder="Sobrenome" style={{ marginBottom: 12 }} value={sobrenome} onChangeText={setSobrenome} />
-                <FirstTextField placeholder="Telefone" style={{ marginBottom: 12 }} value={telefone} onChangeText={setTelefone} maskTelefone={true} />
-                <FirstTextField placeholder="Email" style={{ marginBottom: 12 }} value={email} onChangeText={setEmail} />
+                <FirstTextField
+                    placeholder="Nome"
+                    style={{ marginBottom: 12 }}
+                    value={nome}
+                    onChangeText={setNome}
+                />
+
+                <FirstTextField
+                    placeholder="Sobrenome"
+                    style={{ marginBottom: 12 }}
+                    value={sobrenome}
+                    onChangeText={setSobrenome}
+                />
+
+                <FirstTextField
+                    placeholder="Telefone"
+                    style={{ marginBottom: 12 }}
+                    value={telefone}
+                    onChangeText={setTelefone}
+                    maskTelefone={true}
+                />
+
+                <FirstTextField
+                    placeholder="Email"
+                    style={{ marginBottom: 12 }}
+                    value={email}
+                    onChangeText={setEmail}
+                />
 
                 <FirstButton
                     title="Cadastrar"
@@ -124,3 +184,4 @@ export default function CadastrarContato() {
         </View>
     );
 }
+
