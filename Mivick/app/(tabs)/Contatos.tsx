@@ -11,7 +11,9 @@ import { HeaderComLogin } from '../../components/HeaderComLogin';
 import { styles } from '../../components/styles/styleContato';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 
+// --------------------
 // Tipagem dos contatos
+// --------------------
 type Contact = {
   id_contato: number;
   nome: string;
@@ -26,14 +28,26 @@ export default function ContatoScreen() {
   const router = useRouter();
   const { height, width } = Dimensions.get('window');
 
+  // --------------------
+  // ESTADOS IMPORTANTES
+  // --------------------
+
+  // Lista de contatos
   const [contacts, setContacts] = useState<Contact[]>([]);
+
+  // Controle de modal para exclusão
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  // ID do contato selecionado para excluir
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
 
+  // Escalas para adaptar fontes e tamanhos à tela
   const scale = width / 375;
   const fontScale = Math.min(scale * 1.1, 1.3);
 
-  // Carregar contatos
+  // -------------------------
+  // FUNÇÃO: Buscar contatos
+  // -------------------------
   const fetchContacts = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -45,6 +59,7 @@ export default function ContatoScreen() {
       const data = await response.json();
 
       if (response.ok) {
+        // Seta lista de contatos
         setContacts(data.contacts as Contact[]);
       } else {
         console.log("Erro ao carregar contatos:", data.error);
@@ -54,11 +69,14 @@ export default function ContatoScreen() {
     }
   };
 
+  // Carregar contatos somente na montagem da tela
   useEffect(() => {
     fetchContacts();
   }, []);
 
-  // Função excluir
+  // -------------------------
+  // FUNÇÃO: Deletar contato
+  // -------------------------
   const deleteContact = async () => {
     if (!selectedContactId) return;
 
@@ -71,6 +89,7 @@ export default function ContatoScreen() {
       });
 
       if (response.ok) {
+        // Remove contato da lista atual sem precisar recarregar tudo
         setContacts(prev => prev.filter(c => c.id_contato !== selectedContactId));
       } else {
         console.log("Erro ao excluir.");
@@ -82,6 +101,10 @@ export default function ContatoScreen() {
     setDeleteModalVisible(false);
   };
 
+  // -------------------------
+  // RENDERIZAÇÃO
+  // -------------------------
+
   return (
     <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
       <HeaderComLogin />
@@ -90,6 +113,8 @@ export default function ContatoScreen() {
         style={[styles.container, { paddingHorizontal: width * 0.04 }]}
         showsVerticalScrollIndicator={false}
       >
+
+        {/* Título */}
         <FirstTitle
           text="Contatos"
           style={{
@@ -100,6 +125,7 @@ export default function ContatoScreen() {
           }}
         />
 
+        {/* Linha divisória */}
         <View
           style={{
             height: 2,
@@ -111,7 +137,9 @@ export default function ContatoScreen() {
           }}
         />
 
-        {/* Lista de contatos */}
+        {/* -------------------------
+            LISTA DE CONTATOS
+        -------------------------- */}
         {contacts.map((contact) => (
           <ContactCard
             key={contact.id_contato}
@@ -127,7 +155,8 @@ export default function ContatoScreen() {
               alignSelf: 'center',
             }}
           >
-            {/* Foto + Nome */}
+
+            {/* FOTO + NOME */}
             <View
               style={{
                 flexDirection: 'row',
@@ -142,7 +171,7 @@ export default function ContatoScreen() {
                 style={{ borderRadius: (width * 0.13) / 2 }}
               />
 
-              {/* Nome + Sobrenome */}
+              {/* Nome completo */}
               <View style={{ maxWidth: width * 0.45, flexShrink: 1, marginRight: width * 0.05 }}>
                 <FirstTitle
                   text={`${contact.nome} ${contact.sobrenome}`}
@@ -151,13 +180,12 @@ export default function ContatoScreen() {
                   ellipsizeMode="tail"
                 />
               </View>
-
             </View>
 
-            {/* Botões */}
+            {/* BOTÕES (editar + excluir) */}
             <View style={{ flexDirection: 'row', gap: width * 0.03 }}>
 
-              {/* Ícone EDITAR (de volta e funcional) */}
+              {/* Editar */}
               <TouchableOpacity
                 onPress={() =>
                   router.push({
@@ -180,8 +208,7 @@ export default function ContatoScreen() {
                 </View>
               </TouchableOpacity>
 
-
-              {/* Ícone EXCLUIR */}
+              {/* Excluir */}
               <TouchableOpacity
                 onPress={() => {
                   setSelectedContactId(contact.id_contato);
@@ -205,7 +232,9 @@ export default function ContatoScreen() {
           </ContactCard>
         ))}
 
-        {/* Botão adicionar */}
+        {/* -------------------------
+            BOTÃO: ADICIONAR CONTATO
+        -------------------------- */}
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('/CadastrarContato')}
@@ -219,7 +248,9 @@ export default function ContatoScreen() {
         />
       </ScrollView>
 
-      {/* MODAL DE EXCLUSÃO */}
+      {/* -------------------------
+         MODAL DE CONFIRMAÇÃO
+      -------------------------- */}
       <Modal visible={deleteModalVisible} transparent animationType="fade">
         <View
           style={{
@@ -229,6 +260,7 @@ export default function ContatoScreen() {
             justifyContent: 'center',
           }}
         >
+
           <View
             style={{
               backgroundColor: '#1B1B1A',
@@ -251,7 +283,9 @@ export default function ContatoScreen() {
               Tem certeza que deseja excluir este contato?
             </Text>
 
+            {/* Botões do modal */}
             <View style={{ flexDirection: 'row', gap: width * 0.06 }}>
+              {/* Cancelar */}
               <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
                 <View
                   style={{
@@ -265,6 +299,7 @@ export default function ContatoScreen() {
                 </View>
               </TouchableOpacity>
 
+              {/* Excluir */}
               <TouchableOpacity onPress={deleteContact}>
                 <View
                   style={{
@@ -278,10 +313,10 @@ export default function ContatoScreen() {
                 </View>
               </TouchableOpacity>
             </View>
+
           </View>
         </View>
       </Modal>
-
     </View>
   );
 }
