@@ -1,31 +1,67 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Alert, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { HeaderComLogin } from '../components/HeaderComLogin';
+import { HeaderComLogin } from '@/components/HeaderComLogin';
 import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
-import { useRouter } from 'expo-router';
 
-import { styles } from '../components/styles/styleCadastrarContato';
+import { styles } from '../../components/styles/styleEditarContato';;
 
 const { width, height } = Dimensions.get('window');
 
 const BASE_URL = 'http://192.168.15.66:3000';
 const API_URL = `${BASE_URL}/app/mivick/contact`;
 
-export default function CadastrarContato() {
+export default function EditarContato() {
     const router = useRouter();
+    const { id } = useLocalSearchParams(); 
+
     const [nome, setNome] = useState('');
     const [sobrenome, setSobrenome] = useState('');
     const [telefone, setTelefone] = useState('');
     const [email, setEmail] = useState('');
     const [fotoUri, setFotoUri] = useState<string | null>(null);
-    // Modal de exclusão
-   
+
+    useEffect(() => {
+        const loadContactData = async () => {
+            try {
+                const token = await AsyncStorage.getItem("token");
+
+                const response = await fetch(`${API_URL}/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    Alert.alert("Erro", "Não foi possível carregar o contato");
+                    return;
+                }
+
+                const fullName = data.contact.nome.split(" ");
+                const firstName = fullName[0];
+                const lastName = fullName.slice(1).join(" ");
+
+                setNome(firstName);
+                setSobrenome(lastName);
+                setTelefone(data.contact.telefone);
+                setEmail(data.contact.email);
+                setFotoUri(data.contact.foto ? `${BASE_URL}${data.contact.foto}` : null);
+
+            } catch (err) {
+                console.error(err);
+                Alert.alert("Erro", "Falha ao carregar o contato");
+            }
+        };
+
+        loadContactData();
+    }, [id]);
 
     const safeParseResponse = async (response: Response) => {
         const contentType = response.headers.get('content-type') || '';
@@ -36,26 +72,7 @@ export default function CadastrarContato() {
         return { __raw: text };
     };
 
-
-
-    // Resetar tudo ao voltar para a tela
-    useFocusEffect(
-        useCallback(() => {
-            // Não zera ao entrar
-
-            return () => {
-                // Reseta APENAS ao sair da tela
-                setNome('');
-                setSobrenome('');
-                setTelefone('');
-                setEmail('');
-                setFotoUri(null);
-            };
-        }, [])
-    );
-
-
-    const handleCadastrarContato = async () => {
+    const handleAtualizarContato = async () => {
         try {
             if (!nome || !telefone || !email) {
                 Alert.alert('Erro', 'Preencha todos os campos obrigatórios!');
@@ -64,47 +81,36 @@ export default function CadastrarContato() {
 
             const token = await AsyncStorage.getItem("token");
 
-            if (!token) {
-                Alert.alert("Erro", "Usuário não autenticado.");
-                return;
-            }
-
             const formData = new FormData();
             formData.append('nome', `${nome} ${sobrenome}`);
             formData.append('telefone', telefone);
             formData.append('email', email);
 
+            // Atualiza foto se o usuário trocar
             if (fotoUri && fotoUri.startsWith("file")) {
-                // @ts-ignore - RN File
+                // @ts-ignore - React Native File
                 formData.append("foto", {
                     uri: fotoUri,
-                    type: "image/jpeg",
-                    name: "contato.jpg",
+                    type: 'image/jpeg',
+                    name: 'contato.jpg',
                 });
             }
-            const response = await fetch(API_URL, {
-                method: "POST",
+
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "PUT",
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
                 body: formData,
             });
 
-
             const data = await safeParseResponse(response);
 
             if (response.ok) {
-                Alert.alert("Sucesso", data.message || "Contato cadastrado!");
-
-                setNome('');
-                setSobrenome('');
-                setTelefone('');
-                setEmail('');
-                setFotoUri(null);
-                router.push('./Contatos');
+                Alert.alert("Sucesso", data.message || "Contato atualizado!");
+                router.push('/Contatos');
             } else {
-                Alert.alert("Erro", data.error || data.message || "Falha ao cadastrar contato");
-                console.error("Erro:", data);
+                Alert.alert("Erro", data.error || data.message || "Falha ao atualizar contato");
             }
 
         } catch (error) {
@@ -119,8 +125,13 @@ export default function CadastrarContato() {
 
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
                 <FirstTitle
-                    text="Cadastre um contato"
-                    style={{ fontSize: 35, marginBottom: 10, marginTop: 15, paddingHorizontal: 12 }}
+                    text="Editar Contato"
+                    style={{
+                        fontSize: 35,
+                        marginBottom: 10,
+                        marginTop: 15,
+                        paddingHorizontal: 12,
+                    }}
                 />
 
                 <View
@@ -175,8 +186,8 @@ export default function CadastrarContato() {
                 />
 
                 <FirstButton
-                    title="Cadastrar"
-                    onPress={handleCadastrarContato}
+                    title="Salvar Alterações"
+                    onPress={handleAtualizarContato}
                     customStyle={{
                         marginTop: height * 0.12,
                         height: height * 0.070,
@@ -188,4 +199,3 @@ export default function CadastrarContato() {
         </View>
     );
 }
-

@@ -2,23 +2,20 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, SafeAreaView, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { GoogleSignin, User, isSuccessResponse } from "@react-native-google-signin/google-signin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Toast from "react-native-toast-message";
 
-// -------------------------
 // Componentes
 import { FirstButton } from '@/components/FirstButton';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import { styles } from '../components/styles/styleLogin';
-// -------------------------
 
 const { height } = Dimensions.get("window");
 
-// Configuração do Google Sign-In
+// ---- Google Signin Configuração ----
 GoogleSignin.configure({
   iosClientId: "361690709955-92l95olnj2mbh7mo2d3ube4sbk9eran8.apps.googleusercontent.com",
   webClientId: "361690709955-sqe5mbar1mq4bp5vu9e1b2b9m07jkqnj.apps.googleusercontent.com",
@@ -26,20 +23,26 @@ GoogleSignin.configure({
 
 export default function Login() {
   const router = useRouter();
+
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [auth, setAuth] = useState<User | null>(null);
+
   const API_URL = "http://192.168.15.66:3000";
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  //Login Usuário
+  // -----------------------------
+  // Login padrão do usuário
+  // -----------------------------
   async function handleLogin() {
     if (!email || !senha) {
-      Toast.show({
-        type: "error",
-        text1: "Campos obrigatórios",
-        text2: "Preencha todos os campos antes de continuar."
-      });
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    if (!agreeToTerms) {
+      Alert.alert("Atenção", "Você precisa concordar com os termos de uso!");
       return;
     }
 
@@ -52,113 +55,88 @@ export default function Login() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        await AsyncStorage.setItem("token", data.token);
-
-        Toast.show({
-          type: "success",
-          text1: "Login realizado!",
-          text2: "Bem-vindo de volta 👋"
-        });
-
-        router.push("./Home");
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Erro ao fazer login",
-          text2: data.error || "Credenciais inválidas."
-        });
+      if (!response.ok) {
+        Alert.alert("Erro", data.error || "Falha ao fazer login");
+        return;
       }
+
+      await AsyncStorage.setItem("token", data.token);
+      router.push("./Home");
+
     } catch (error) {
       console.error("Erro ao logar:", error);
-
-      Toast.show({
-        type: "error",
-        text1: "Erro de Conexão",
-        text2: "Não foi possível conectar ao servidor."
-      });
+      Alert.alert("Erro", "Falha de conexão com o servidor");
     }
   }
 
-  //Login com Google
+  // -----------------------------
+  // Login com Google
+  // -----------------------------
   async function handleGoogleSignIn() {
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
-      if (isSuccessResponse(response)) {
-        const { idToken } = await GoogleSignin.getTokens();
-
-        if (!idToken) {
-          Toast.show({
-            type: "error",
-            text1: "Erro no Google",
-            text2: "Não foi possível obter o ID Token."
-          });
-          return;
-        }
-
-        // Envia o token para o backend
-        const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: idToken }),
-        });
-
-        const data = await backendResponse.json();
-
-        if (backendResponse.ok) {
-          await AsyncStorage.setItem("token", data.token);
-
-          Toast.show({
-            type: "success",
-            text1: "Login com Google",
-            text2: "Autenticado com sucesso!"
-          });
-
-          router.push("./Home");
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Erro no Google Login",
-            text2: data.message || "Falha ao autenticar com o backend."
-          });
-        }
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Login cancelado",
-          text2: "Você cancelou a autenticação."
-        });
+      if (!isSuccessResponse(response)) {
+        console.warn("Login cancelado ou falhou.");
+        return;
       }
-    } catch (error) {
 
-      Toast.show({
-        type: "error",
-        text1: "Erro inesperado",
-        text2: "Ocorreu um problema ao tentar usar o Google."
+      const tokens = await GoogleSignin.getTokens();
+
+      if (!tokens.idToken) {
+        Alert.alert("Erro", "Não foi possível obter o ID Token.");
+        return;
+      }
+
+      // Enviando o token ao backend
+      const backendResponse = await fetch(`${API_URL}/app/mivick/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tokens.idToken }),
       });
+
+      const data = await backendResponse.json();
+
+      if (!backendResponse.ok) {
+        Alert.alert("Erro", data.message || "Falha ao autenticar com o backend.");
+        return;
+      }
+
+      await AsyncStorage.setItem("token", data.token);
+      router.push("./Home");
+
+    } catch (error) {
+      console.error("Erro no login com Google:", error);
+      Alert.alert("Erro", "Erro ao conectar com o Google.");
     }
   }
 
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
     <SafeAreaView style={styles.container}>
       <Header />
       <View style={styles.content}>
+        
         <FirstTitle text="Login" fontSize={35} />
 
         <FirstTextField
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
           style={[styles.textField, { marginTop: height * 0.06 }]}
         />
+
         <FirstTextField
           placeholder="Senha"
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
-          style={[styles.textField, { marginTop: height * 0.0 }]}
+          style={[styles.textField]}
         />
 
         <FirstButton
@@ -172,7 +150,6 @@ export default function Login() {
             height: 2,
             backgroundColor: '#F85200',
             width: '100%',
-            alignSelf: 'center',
             marginVertical: height * 0.02,
           }}
         />
@@ -185,6 +162,7 @@ export default function Login() {
           icon={<FontAwesome name="google" size={24} color="#fff" />}
         />
 
+        {/* Checkbox Termos */}
         <View style={styles.checkboxContainer}>
           <TouchableOpacity
             style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
@@ -198,6 +176,7 @@ export default function Login() {
             <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
           </Text>
         </View>
+
       </View>
     </SafeAreaView>
   );
