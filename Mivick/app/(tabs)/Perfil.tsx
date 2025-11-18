@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Dimensions, Alert, Text, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Dimensions, Alert, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -8,6 +8,7 @@ import { FirstSubTitle } from '@/components/FirstSubTitle';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 import { FirstButton } from '@/components/FirstButton';
 import FontProvider from '@/components/providers/FontProvider';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,15 +28,15 @@ export default function Perfil() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Helper: tenta parsear JSON se for JSON, senão retorna texto
+  // 🔥 Novo estado — controla se o perfil pode ser editado
+  const [editing, setEditing] = useState(false);
+
+  // BACKEND : 
+
   const safeParseResponse = async (response: Response) => {
     const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      return response.json();
-    }
-    // não é JSON — retorna texto (útil para debugar HTML de erro)
-    const text = await response.text();
-    return { __raw: text };
+    if (contentType.includes('application/json')) return response.json();
+    return { __raw: await response.text() };
   };
 
   const fetchProfile = async () => {
@@ -43,44 +44,32 @@ export default function Perfil() {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert('Erro', 'Token não encontrado. Faça login novamente.');
-        setLoading(false);
+        Alert.alert('Erro', 'Token não encontrado.');
         return;
       }
 
       const response = await fetch(`${API_URL}/profile`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await safeParseResponse(response);
 
       if (response.ok) {
-        // Se por algum motivo token JWT do Google foi usado e senha é null, marcamos googleUser
-        const serverUser = data.user || {};
+        const u = data.user || {};
         setUserData({
-          nome: serverUser.nome || '',
-          telefone: serverUser.telefone || '',
-          email: serverUser.email || '',
-          foto: serverUser.foto ? `${BASE_URL}${serverUser.foto}` : '',
+          nome: u.nome || '',
+          telefone: u.telefone || '',
+          email: u.email || '',
+          foto: u.foto ? `${BASE_URL}${u.foto}` : '',
         });
 
-        if (!serverUser.senha) {
-          setGoogleUser(true);
-        } else {
-          setGoogleUser(false);
-        }
+        setGoogleUser(!u.senha);
       } else {
-        // Se servidor retornou HTML ou texto, mostra para debug
-        const errMsg = data.error || data.message || data.__raw || 'Falha ao carregar perfil';
-        Alert.alert('Erro', errMsg);
-        console.error('Resposta inválida fetchProfile:', data);
+        Alert.alert('Erro', data.error || data.__raw || 'Falha ao carregar perfil');
       }
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
-      Alert.alert('Erro', 'Falha de conexão com o servidor');
+      Alert.alert('Erro', 'Falha de conexão');
     } finally {
       setLoading(false);
     }
@@ -93,27 +82,21 @@ export default function Perfil() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        Alert.alert('Erro', 'Token não encontrado. Faça login novamente.');
-        setSaving(false);
-        return;
-      }
 
-      // monta FormData corretamente (sempre usar new FormData)
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return Alert.alert('Erro', 'Token não encontrado.');
+
       const formData = new FormData();
       formData.append('nome', userData.nome || '');
       formData.append('telefone', userData.telefone || '');
 
-      // Se usuário normal (não-google), permite enviar email
       if (!googleUser) {
         formData.append('email', userData.email || '');
       }
 
-      // Se a foto for local (ex: file://...) é sinal de alteração — envia
-      // Caso a foto seja remoto (http://...) não anexa nada
-      if (userData.foto && (userData.foto as string).startsWith('file')) {
-        // @ts-ignore — RN FormData file object
+      // Foto só envia se for nova (file://)
+      if (userData.foto && userData.foto.startsWith('file')) {
+        // @ts-ignore
         formData.append('foto', {
           uri: userData.foto,
           name: 'profile.jpg',
@@ -123,34 +106,29 @@ export default function Perfil() {
 
       const response = await fetch(`${API_URL}/profile`, {
         method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // NÃO setar Content-Type aqui — fetch vai criar boundary automaticamente
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       const data = await safeParseResponse(response);
 
       if (response.ok) {
-        const serverUser = data.user || {};
+        const u = data.user || {};
         setUserData(prev => ({
           ...prev,
-          // recebe caminho unix /uploads/arquivo.jpg do backend; converte pra URL completa
-          foto: serverUser.foto ? `${BASE_URL}${serverUser.foto}` : prev.foto,
-          nome: serverUser.nome ?? prev.nome,
-          telefone: serverUser.telefone ?? prev.telefone,
-          email: serverUser.email ?? prev.email,
+          foto: u.foto ? `${BASE_URL}${u.foto}` : prev.foto,
+          nome: u.nome ?? prev.nome,
+          telefone: u.telefone ?? prev.telefone,
+          email: u.email ?? prev.email,
         }));
 
-        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+        setEditing(false); // 🔥 Fecha modo edição
+
+        Alert.alert('Sucesso', 'Perfil atualizado!');
       } else {
-        const errMsg = data.error || data.message || data.__raw || 'Falha ao atualizar perfil';
-        Alert.alert('Erro', errMsg);
-        console.error('Resposta inválida handleSave:', data);
+        Alert.alert('Erro', data.error || data.__raw || 'Falha ao atualizar');
       }
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Falha de conexão com o servidor');
     } finally {
       setSaving(false);
@@ -166,6 +144,8 @@ export default function Perfil() {
     );
   }
 
+
+  // UI PRINCIPAL DESIGN
   return (
     <FontProvider>
       <ScrollView
@@ -176,6 +156,11 @@ export default function Perfil() {
         }}
         showsVerticalScrollIndicator={false}
       >
+
+        {/* DEGRADÊ */}
+
+
+
         {/* FOTO */}
         <View
           style={{
@@ -190,21 +175,41 @@ export default function Perfil() {
         >
           <PerfilFoto
             style={{ width: width * 0.27, height: width * 0.27 }}
-            showEditIcon
-            onChangePhoto={(uri: string) => setUserData(prev => ({ ...prev, foto: uri }))}
+            showEditIcon={editing}
+            onChangePhoto={(uri: string) => editing && setUserData(prev => ({ ...prev, foto: uri }))}
             imageUri={userData.foto ?? ''}
           />
         </View>
 
-        <FirstSubTitle
-          text="Editar Perfil"
-          style={{
-            fontSize: Math.min(width * 0.05, 20),
-            color: '#F85200',
-            marginBottom: height * 0.025,
-            alignSelf: 'center',
-          }}
-        />
+        {/* BOTÃO EDITAR */}
+        {!editing && (
+          <TouchableOpacity onPress={() => setEditing(true)}>
+            <FirstSubTitle
+              text="Editar Perfil"
+              style={{
+                fontSize: Math.min(width * 0.05, 20),
+                color: '#F85200',
+                marginBottom: height * 0.025,
+                alignSelf: 'center',
+              }}
+            />
+          </TouchableOpacity>
+        )}
+
+      
+
+        {/* Quando está editando, troca para texto informativo */}
+        {editing && (
+          <FirstSubTitle
+            text="Edição ativada"
+            style={{
+              fontSize: Math.min(width * 0.045, 18),
+              color: '#F85200',
+              marginBottom: height * 0.025,
+              alignSelf: 'center',
+            }}
+          />
+        )}
 
         <View
           style={{
@@ -229,7 +234,10 @@ export default function Perfil() {
                 zIndex: 1,
               }}
             >
-              <FirstSubTitle text={campo.charAt(0).toUpperCase() + campo.slice(1)} style={{ fontSize: Math.min(width * 0.035, 15), color: '#fff' }} />
+              <FirstSubTitle
+                text={campo.charAt(0).toUpperCase() + campo.slice(1)}
+                style={{ fontSize: Math.min(width * 0.035, 15), color: '#fff' }}
+              />
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -246,30 +254,33 @@ export default function Perfil() {
                   backgroundColor: 'transparent',
                   borderColor: '#F85200',
                   borderWidth: 2,
-                  color: '#fff',
                   height: height * 0.069,
                   paddingHorizontal: width * 0.025,
                   borderRadius: 6,
                   fontSize: Math.min(width * 0.04, 16),
+                  color: editing ? '#fff' : '#999',
                 }}
                 placeholderTextColor="#ccc"
                 value={(userData[campo] ?? '') as string}
-                editable={!(campo === 'email' && googleUser)}
+                editable={editing && !(campo === 'email' && googleUser)}
                 onChangeText={text => setUserData(prev => ({ ...prev, [campo]: text }))}
               />
             </View>
           </View>
         ))}
 
-        <FirstButton
-          title={saving ? 'Salvando...' : 'Salvar'}
-          customStyle={{
-            marginHorizontal: width * 0.05,
-            opacity: saving ? 0.6 : 1,
-          }}
-          disabled={saving}
-          onPress={handleSave}
-        />
+        {/* BOTÃO SALVAR — só aparece no modo edição */}
+        {editing && (
+          <FirstButton
+            title={saving ? 'Salvando...' : 'Salvar'}
+            customStyle={{
+              marginHorizontal: width * 0.05,
+              opacity: saving ? 0.6 : 1,
+            }}
+            disabled={saving}
+            onPress={handleSave}
+          />
+        )}
       </ScrollView>
     </FontProvider>
   );
