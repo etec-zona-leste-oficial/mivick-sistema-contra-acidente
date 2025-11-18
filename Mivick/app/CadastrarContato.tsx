@@ -175,7 +175,7 @@ export default function CadastrarContato() {
                     onPress={handleCadastrarContato}
                     customStyle={{
                         marginTop: height * 0.12,
-                        height: height * 0.065,
+                        height: height * 0.075,
                         width: width * 0.9,
                         alignSelf: 'center',
                     }}

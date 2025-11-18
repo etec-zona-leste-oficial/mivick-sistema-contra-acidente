@@ -1,27 +1,77 @@
 import { ContactCard } from '@/components/ContactCard/ContactCard';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, View } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { FirstButton } from '../../components/FirstButton';
 import { FirstTitle } from '../../components/FirstTitle';
 import { HeaderComLogin } from '../../components/HeaderComLogin';
 import { styles } from '../../components/styles/styleContato';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 
+const BASE_URL = 'http://192.168.15.66:3000';
+const API_URL = `${BASE_URL}/app/mivick/contact/contato`;
+
+// Defina o shape do contato
+interface Contact {
+  id_contato: number;
+  nome: string;
+  email?: string | null;
+  telefone?: string | null;
+  foto?: string | null; // '/uploads/xxx.jpg' ou null
+}
+
 export default function ContatoScreen() {
   const router = useRouter();
   const { height, width } = Dimensions.get('window');
 
-  const contacts = [
-    { id: 1, name: 'Contato 1' },
-    { id: 2, name: 'Contato 2' },
-    { id: 3, name: 'Contato 3' },
-  ];
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
-  // Escalas baseadas na tela
-  const scale = width / 375; // base iPhone X
+  const scale = width / 375;
   const fontScale = Math.min(scale * 1.1, 1.3);
+
+  // parse seguro (retorna json ou texto bruto)
+  const safeParseResponse = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) return response.json();
+    const text = await response.text();
+    return { __raw: text };
+  };
+
+  // Buscar contatos
+  const fetchContacts = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        console.warn("Token não encontrado ao buscar contatos");
+        return;
+      }
+
+      const response = await fetch(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data: any = await safeParseResponse(response);
+
+      if (response.ok) {
+        // assume backend retorna { contacts: [...] }
+        const list: Contact[] = Array.isArray(data.contacts) ? data.contacts : [];
+        setContacts(list);
+      } else {
+        console.error("Erro ao carregar contatos:", data);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar contatos:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#1B1B1A' }}>
@@ -30,7 +80,6 @@ export default function ContatoScreen() {
         style={[styles.container, { paddingHorizontal: width * 0.04 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* --- Título --- */}
         <FirstTitle
           text="Contatos"
           style={{
@@ -41,7 +90,6 @@ export default function ContatoScreen() {
           }}
         />
 
-        {/* --- Linha separadora --- */}
         <View
           style={{
             height: 2,
@@ -53,13 +101,12 @@ export default function ContatoScreen() {
           }}
         />
 
-        {/* --- Lista de contatos --- */}
         {contacts.map((contact) => (
           <ContactCard
-            key={contact.id}
+            key={contact.id_contato}
             style={{
               marginBottom: height * 0.02,
-              height: height * 0.1    ,
+              height: height * 0.1,
               width: width * 0.90,
               borderRadius: width * 0.02,
               flexDirection: 'row',
@@ -69,22 +116,16 @@ export default function ContatoScreen() {
               alignSelf: 'center',
             }}
           >
-            {/* --- Área esquerda: Foto + Nome --- */}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: width * 0.03,
-              }}
-            >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: width * 0.03 }}>
               <PerfilFoto
-                size={width * 0.13} // tamanho dinâmico
+                size={width * 0.13}
+                imageUri={contact.foto ? `${BASE_URL}${contact.foto}` : ''}
                 style={{ borderRadius: (width * 0.13) / 2 }}
               />
-              <FirstTitle text={contact.name} fontSize={20 * fontScale} />
+
+              <FirstTitle text={contact.nome} fontSize={20 * fontScale} />
             </View>
 
-            {/* --- Área direita: Botões --- */}
             <View style={{ flexDirection: 'row', gap: width * 0.03 }}>
               <View
                 style={{
@@ -96,11 +137,7 @@ export default function ContatoScreen() {
                   justifyContent: 'center',
                 }}
               >
-                <FontAwesome
-                  name="pencil"
-                  size={width * 0.045}
-                  color="#fff"
-                />
+                <FontAwesome name="pencil" size={width * 0.045} color="#fff" />
               </View>
 
               <View
@@ -113,17 +150,12 @@ export default function ContatoScreen() {
                   justifyContent: 'center',
                 }}
               >
-                <FontAwesome
-                  name="close"
-                  size={width * 0.05}
-                  color="#fff"
-                />
+                <FontAwesome name="close" size={width * 0.05} color="#fff" />
               </View>
             </View>
           </ContactCard>
         ))}
 
-        {/* --- Botão para adicionar novo contato --- */}
         <FirstButton
           title="Adicionar Contato"
           onPress={() => router.push('./CadastrarContato')}

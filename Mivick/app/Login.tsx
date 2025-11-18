@@ -2,10 +2,10 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, SafeAreaView, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { GoogleSignin, User, isSuccessResponse } from "@react-native-google-signin/google-signin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import Toast from "react-native-toast-message";
 
 // -------------------------
 // Componentes
@@ -28,14 +28,18 @@ export default function Login() {
   const router = useRouter();
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [auth, setAuth] = useState<User | null>(null);
-  const API_URL = "http://192.168.15.66:3000" //Backend
+  const API_URL = "http://192.168.15.66:3000";
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
   //Login Usuário
   async function handleLogin() {
     if (!email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos!");
+      Toast.show({
+        type: "error",
+        text1: "Campos obrigatórios",
+        text2: "Preencha todos os campos antes de continuar."
+      });
       return;
     }
 
@@ -50,14 +54,29 @@ export default function Login() {
 
       if (response.ok) {
         await AsyncStorage.setItem("token", data.token);
-        console.log("Usuário logado:", data.user);
+
+        Toast.show({
+          type: "success",
+          text1: "Login realizado!",
+          text2: "Bem-vindo de volta 👋"
+        });
+
         router.push("./Home");
       } else {
-        Alert.alert("Erro", data.error || "Falha ao fazer login");
+        Toast.show({
+          type: "error",
+          text1: "Erro ao fazer login",
+          text2: data.error || "Credenciais inválidas."
+        });
       }
     } catch (error) {
       console.error("Erro ao logar:", error);
-      Alert.alert("Erro", "Falha de conexão com o servidor");
+
+      Toast.show({
+        type: "error",
+        text1: "Erro de Conexão",
+        text2: "Não foi possível conectar ao servidor."
+      });
     }
   }
 
@@ -68,11 +87,14 @@ export default function Login() {
       const response = await GoogleSignin.signIn();
 
       if (isSuccessResponse(response)) {
-
         const { idToken } = await GoogleSignin.getTokens();
 
         if (!idToken) {
-          Alert.alert("Erro", "Não foi possível obter o ID Token do Google.");
+          Toast.show({
+            type: "error",
+            text1: "Erro no Google",
+            text2: "Não foi possível obter o ID Token."
+          });
           return;
         }
 
@@ -86,23 +108,38 @@ export default function Login() {
         const data = await backendResponse.json();
 
         if (backendResponse.ok) {
-          console.log("Token do backend:", data.token);
-          console.log("Google ID Token:", idToken);
           await AsyncStorage.setItem("token", data.token);
+
+          Toast.show({
+            type: "success",
+            text1: "Login com Google",
+            text2: "Autenticado com sucesso!"
+          });
+
           router.push("./Home");
         } else {
-          console.warn("Erro do backend:", data.message);
-          Alert.alert("Erro", "Falha ao autenticar com o backend.");
+          Toast.show({
+            type: "error",
+            text1: "Erro no Google Login",
+            text2: data.message || "Falha ao autenticar com o backend."
+          });
         }
       } else {
-        console.warn("Login cancelado ou falhou.");
+        Toast.show({
+          type: "error",
+          text1: "Login cancelado",
+          text2: "Você cancelou a autenticação."
+        });
       }
     } catch (error) {
-      console.error("Erro no login com Google:", error);
+
+      Toast.show({
+        type: "error",
+        text1: "Erro inesperado",
+        text2: "Ocorreu um problema ao tentar usar o Google."
+      });
     }
   }
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,7 +166,6 @@ export default function Login() {
           onPress={handleLogin}
           customStyle={styles.loginButton}
         />
-
 
         <View
           style={{
