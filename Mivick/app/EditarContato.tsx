@@ -3,12 +3,14 @@ import { View, ScrollView, Alert, Dimensions, ActivityIndicator, Text } from 're
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+// Componentes reutilizáveis
 import { HeaderComLogin } from '@/components/HeaderComLogin';
 import { FirstTitle } from '@/components/FirstTitle';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 
+// Estilos específicos da tela
 import { styles } from '../components/styles/styleEditarContato';
 
 const { width, height } = Dimensions.get('window');
@@ -18,32 +20,43 @@ const API_URL = `${BASE_URL}/app/mivick/contact`;
 
 export default function EditarContato() {
   const router = useRouter();
+
+  // ID do contato passado pela rota
   const { id_contato } = useLocalSearchParams();
   console.log("ID recebido ->", id_contato);
 
+  // Estados dos campos de edição
   const [nome, setNome] = useState('');
   const [sobrenome, setSobrenome] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
 
-  // controla se o contato já foi carregado (garante montagem com valores)
-  const [contactLoaded, setContactLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
+  /**
+   * STATES DE CONTROLE
+   */
+  const [contactLoaded, setContactLoaded] = useState(false); // controla montagem dos campos
+  const [loading, setLoading] = useState(false); // loading geral da tela
 
+  /**
+   * 🔄 Carregar dados do contato ao abrir a tela
+   */
   useEffect(() => {
-    // não tenta buscar enquanto id_contato não existir
+    // não executa enquanto o id não existir
     if (!id_contato) return;
 
     const loadContactData = async () => {
       try {
         setLoading(true);
+
         const token = await AsyncStorage.getItem("token");
 
+        // Faz a requisição para buscar o contato específico
         const response = await fetch(`${API_URL}/${id_contato}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        // Garante que a resposta seja JSON
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
           const raw = await response.text();
@@ -63,20 +76,26 @@ export default function EditarContato() {
           return;
         }
 
-        // Dividir nome em primeiro + sobrenome (seguro)
+        /**
+         * Divide o nome em primeiro nome + sobrenome
+         * — Evita quebra caso usuário tenha 1 ou 5 nomes
+         */
         const partes = (contato.nome || "").trim().split(/\s+/);
         const primeiroNome = partes[0] || "";
         const sobrenomeJunto = partes.length > 1 ? partes.slice(1).join(" ") : "";
 
-        // seta estados antes de marcar contactLoaded
+        // Seta estados dos campos
         setNome(primeiroNome);
         setSobrenome(sobrenomeJunto);
         setTelefone(contato.telefone || "");
         setEmail(contato.email || "");
+
+        // Foto vinda da API
         setFotoUri(contato.foto ? `${BASE_URL}${contato.foto}` : null);
 
-        // Indica que tudo está pronto — isso faz com que os campos sejam montados com valores
+        // Permite renderizar os TextFields
         setContactLoaded(true);
+
       } catch (error) {
         console.error("Erro ao carregar contato:", error);
         Alert.alert("Erro", "Falha ao carregar os dados do contato.");
@@ -88,6 +107,9 @@ export default function EditarContato() {
     loadContactData();
   }, [id_contato]);
 
+  /**
+   * Trata respostas não-JSON da API
+   */
   const safeParseResponse = async (response: Response) => {
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('application/json')) return response.json();
@@ -95,21 +117,28 @@ export default function EditarContato() {
     return { __raw: text };
   };
 
+  /**
+   * 📝 Atualizar dados do contato
+   */
   const handleAtualizarContato = async () => {
     try {
+      // validação simples antes do envio
       if (!nome || !telefone || !email) {
         Alert.alert('Erro', 'Preencha todos os campos obrigatórios!');
         return;
       }
 
       const token = await AsyncStorage.getItem("token");
+
+      // Monta formData igual ao cadastro
       const formData = new FormData();
       formData.append('nome', `${nome} ${sobrenome}`.trim());
       formData.append('telefone', telefone);
       formData.append('email', email);
 
+      // Envia foto nova se tiver sido alterada
       if (fotoUri && fotoUri.startsWith("file")) {
-        // @ts-ignore
+        // @ts-ignore — RN File
         formData.append("foto", {
           uri: fotoUri,
           type: 'image/jpeg',
@@ -117,6 +146,7 @@ export default function EditarContato() {
         });
       }
 
+      // Faz requisição PUT para atualizar
       const response = await fetch(`${API_URL}/${id_contato}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
@@ -138,12 +168,16 @@ export default function EditarContato() {
     }
   };
 
-  // mostra loading enquanto busca por dados
+  /**
+   * Tela de loading enquanto os dados são carregados
+   */
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', backgroundColor: '#000' }}>
         <ActivityIndicator size="large" color="#F85200" />
-        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>Carregando contato...</Text>
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 10 }}>
+          Carregando contato...
+        </Text>
       </View>
     );
   }
@@ -153,6 +187,8 @@ export default function EditarContato() {
       <HeaderComLogin />
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
+        {/* Título da página */}
         <FirstTitle
           text="Editar Contato"
           style={{
@@ -163,6 +199,7 @@ export default function EditarContato() {
           }}
         />
 
+        {/* Linha laranja */}
         <View
           style={{
             height: 2,
@@ -173,6 +210,7 @@ export default function EditarContato() {
           }}
         />
 
+        {/* Foto do contato */}
         <PerfilFoto
           style={{
             alignSelf: 'center',
@@ -185,17 +223,19 @@ export default function EditarContato() {
           imageUri={fotoUri || ""}
         />
 
-        {/* Só monta os campos depois que contactLoaded for true */}
+        {/* Monta os campos SOMENTE após carregar dados do contato */}
         {!contactLoaded ? null : (
           <>
+            {/* Nome */}
             <FirstTextField
               placeholder="Nome"
               style={{ marginBottom: 12 }}
               value={nome}
               onChangeText={setNome}
-              key={`nome-${nome}`} // força remount se precisar
+              key={`nome-${nome}`} // força atualização se necessário
             />
 
+            {/* Sobrenome */}
             <FirstTextField
               placeholder="Sobrenome"
               style={{ marginBottom: 12 }}
@@ -204,6 +244,7 @@ export default function EditarContato() {
               key={`sob-${sobrenome}`}
             />
 
+            {/* Telefone */}
             <FirstTextField
               placeholder="Telefone"
               style={{ marginBottom: 12 }}
@@ -213,6 +254,7 @@ export default function EditarContato() {
               key={`tel-${telefone}`}
             />
 
+            {/* Email */}
             <FirstTextField
               placeholder="Email"
               style={{ marginBottom: 12 }}
@@ -221,6 +263,7 @@ export default function EditarContato() {
               key={`email-${email}`}
             />
 
+            {/* Botão salvar */}
             <FirstButton
               title="Salvar Alterações"
               onPress={handleAtualizarContato}
