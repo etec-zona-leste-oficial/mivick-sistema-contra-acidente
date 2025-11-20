@@ -14,9 +14,9 @@ import { ContactCard } from '@/components/ContactCard/ContactCard';
 const { height, width } = Dimensions.get("window");
 
 const carouselImages = [
-  require('../../assets/images/primeira-bike1.jpg'),
-  require('../../assets/images/primeira-bike1.jpg'),
-  require('../../assets/images/primeira-bike1.jpg')
+  require('../../assets/images/ciclimoto.jpg'),
+  require('../../assets/images/Rodovia.jpg'),
+  require('../../assets/images/Moto.jpg')
 ];
 
 export default function HomeScreen() {
