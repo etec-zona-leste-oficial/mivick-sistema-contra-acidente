@@ -10,9 +10,9 @@ import { styles } from '../components/styles/styleHome';
 
 // Imagens do carrossel
 const carouselImages = [
-  require('../assets/images/primeira-bike1.jpg'),
-  require('../assets/images/segundo.webp'),
-  require('../assets/images/terceira.jpg')
+  require('../assets/images/ciclimoto.jpg'),
+  require('../assets/images/Rodovia.jpg'),
+  require('../assets/images/Moto.jpg')
 ];
 
 export default function Home() {
