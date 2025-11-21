@@ -4,8 +4,9 @@ import { Platform, PermissionsAndroid, View, Text } from "react-native";
 
 interface BleContextType {
   manager: BleManager | null;
-  device: Device | null;
-  setDevice: (d: Device | null) => void;
+  devices: { [id: string]: Device };
+  addDevice: (d: Device) => void;
+  removeDevice: (id: string) => void;
   connected: boolean;
   setConnected: (v: boolean) => void;
   safeReady: boolean;
@@ -15,7 +16,20 @@ const BleContext = createContext<BleContextType | null>(null);
 
 export const BleProvider = ({ children }: { children: React.ReactNode }) => {
   const [manager, setManager] = useState<BleManager | null>(null);
-  const [device, setDevice] = useState<Device | null>(null);
+ const [devices, setDevices] = useState<{ [key: string]: Device }>({});
+
+const addDevice = (dev: Device) => {
+  setDevices(prev => ({ ...prev, [dev.id]: dev }));
+};
+
+const removeDevice = (id: string) => {
+  setDevices(prev => {
+    const newObj = { ...prev };
+    delete newObj[id];
+    return newObj;
+  });
+};
+
   const [connected, setConnected] = useState(false);
   const [safeReady, setSafeReady] = useState(false);
 
@@ -80,8 +94,9 @@ export const BleProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value: BleContextType = {
     manager,
-    device,
-    setDevice,
+    devices,
+  addDevice,
+  removeDevice,
     connected,
     setConnected,
     safeReady,

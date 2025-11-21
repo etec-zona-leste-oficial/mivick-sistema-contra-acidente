@@ -17,25 +17,55 @@ const { width, height } = Dimensions.get("window");
 
 export default function ConfigurarDispositivo() {
   const router = useRouter();
-const { manager, device, setDevice, connected, setConnected } = useBle();
+const { manager, devices,  connected, setConnected } = useBle();
 
 
 async function enviarComando(cmd: string) {
-  if (!device || !connected) {
-    Alert.alert("Aviso", "Dispositivo BLE não conectado.");
+  if (!connected) {
+    Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
     return;
   }
+
   try {
-    await device.writeCharacteristicWithResponseForService(
-      SERVICE_UUID,
-      CHARACTERISTIC_UUID,
-      Buffer.from(cmd, "utf-8").toString("base64")
-    );
-    Alert.alert("Comando enviado", cmd);
+    const arr = Object.values(devices);
+
+    for (const dev of arr) {
+      await dev.writeCharacteristicWithResponseForService(
+        SERVICE_UUID,
+        CHARACTERISTIC_UUID,
+        Buffer.from(cmd, "utf-8").toString("base64")
+      );
+    }
+
+    Alert.alert("Comando enviado a todos", cmd);
   } catch (e) {
+    console.log(e);
     Alert.alert("Erro", "Falha ao enviar comando.");
   }
 }
+async function desconectarTodos() {
+  if (!connected) {
+    Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
+    return;
+  }
+
+  try {
+    const arr = Object.values(devices);
+
+    for (const dev of arr) {
+      await dev.cancelConnection();
+    }
+
+    setConnected(false); // atualiza estado global
+
+    Alert.alert("Desconectado", "Todos os dispositivos foram desconectados.");
+  } catch (e) {
+    console.log(e);
+    Alert.alert("Erro", "Falha ao desconectar.");
+  }
+}
+
+console.log("Devices conectados:", devices);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
@@ -163,35 +193,28 @@ async function enviarComando(cmd: string) {
             />
             
           </View>
-          <View style={{ alignItems: "center", marginTop: 20 }}>
-  <FirstButton
-    title="Ligar Sensores"
-    onPress={() => enviarComando("ON")}
-    customStyle={{
-      marginVertical: 10,
-      width: "85%",
-      alignSelf: "center",
-    }}
-  />
-  <FirstButton
-    title="Desligar Sensores"
-    onPress={() => enviarComando("OFF")}
-    customStyle={{
-      marginVertical: 10,
-      width: "85%",
-      alignSelf: "center",
-    }}
-  />
-  <FirstButton
-    title="Desconectar"
-    onPress={() => enviarComando("DISCONNECT")}
-    customStyle={{
-      marginVertical: 10,
-      width: "85%",
-      alignSelf: "center",
-    }}
-  />
-</View>
+          {connected && (
+  <View style={{ alignItems: "center", marginTop: 20 }}>
+    <FirstButton
+      title="Ligar Sensores"
+      onPress={() => enviarComando("ON")}
+      customStyle={{ marginVertical: 10, width: "85%" }}
+    />
+
+    <FirstButton
+      title="Desligar Sensores"
+      onPress={() => enviarComando("OFF")}
+      customStyle={{ marginVertical: 10, width: "85%" }}
+    />
+
+    <FirstButton
+      title="Desconectar"
+      onPress={desconectarTodos}
+      customStyle={{ marginVertical: 10, width: "85%" }}
+    />
+  </View>
+)}
+
 
         </FirstCard>
 

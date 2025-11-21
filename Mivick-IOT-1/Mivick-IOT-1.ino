@@ -1,7 +1,6 @@
 /* Mivick_IOT_S3_GOOUUU.ino
    ESP principal (ciclista) — BLE <-> App, sensores, câmera, WebSocket.
 */
-
 #include <Wire.h>
 #include <Arduino.h>
 #include <NimBLEDevice.h>
@@ -165,17 +164,10 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
       } else {
         Serial.println("Formato WIFI invalido");
       }
-    } else if (msg.startsWith("VEICULO|")) {
-      // Se outra entidade enviar via BLE dados do veículo para o app, encaminhar
-      Serial.println("VEICULO mensagem recebida (via BLE): " + msg);
-      if (pCharacteristic) {
-        pCharacteristic->setValue(msg.c_str());
-        pCharacteristic->notify();
-      }
-      notifyClients(msg);
     }
   }
 };
+
 
 // ---------- SETUP ----------
 void setup(){
@@ -187,10 +179,10 @@ void setup(){
   // I2C MPU
   Wire.begin(MPU_SDA, MPU_SCL);
   Serial.println("I2C iniciado");
-
+ delay(1000);
   // Camera primeiro
   startCamera();
-
+ delay(5000);
   // BLE init
   NimBLEDevice::init("ESP32-CAM-BLE");
   pServer = NimBLEDevice::createServer();           // CORREÇÃO: usar pServer
@@ -202,6 +194,8 @@ void setup(){
   NimBLEDevice::getAdvertising()->addServiceUUID(SERVICE_UUID);
   NimBLEDevice::getAdvertising()->start();
   Serial.println("BLE advertising iniciado");
+
+
 
   // Não iniciar WebServer ainda - só apos WiFi conectado
   pinMode(TRIG_PIN, OUTPUT);
@@ -229,8 +223,6 @@ void loop(){
         pCharacteristic->notify();
         // also send the credentials back to vehicle if needed
         String wifiMsg = "WIFI|" + wifiSSID + "|" + wifiPASS;
-        pCharacteristic->setValue(wifiMsg.c_str());
-        pCharacteristic->notify();
       }
       // start webserver + ws if not started
       if (!wsStarted){
@@ -271,7 +263,7 @@ void loop(){
       Serial.printf("Objeto a %.2f cm\n", distance_cm);
       acidente++;
       if (wsStarted) sendPhotoWS();
-      notifyClients("ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm,2));
+      notifyClients("CICLISTA|ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm,2));
       delay(300);
     }
   }
@@ -299,7 +291,7 @@ void loop(){
           pCharacteristic->setValue("MPU6050|BATIDA");
           pCharacteristic->notify();
         }
-        notifyClients("MPU6050|BATIDA|" + String(acc,2));
+        notifyClients("CICLISTA|MPU6050|BATIDA|" + String(acc,2));
         if (wsStarted) sendPhotoWS();
         delay(400);
       }
@@ -317,7 +309,7 @@ void loop(){
         pCharacteristic->setValue("SW420|IMPACTO");
         pCharacteristic->notify();
       }
-      notifyClients("SW420|IMPACTO|1");
+      notifyClients( "CICLISTA|SW420|IMPACTO|1");
       if (wsStarted) sendPhotoWS();
       delay(400);
     }
@@ -325,12 +317,12 @@ void loop(){
 
   // Classificacao
   if (acidente >= 2 && acidente <= 3){
-    notifyClients("ALERTA|POSSIVEL_ACIDENTE|" + String(acidente));
+    notifyClients( "CICLISTA|ALERTA|POSSIVEL_ACIDENTE|" + String(acidente));
     if (pCharacteristic){ pCharacteristic->setValue(("POSSIVEL_ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
     Serial.println("POSSIVEL ACIDENTE");
     acidente = 0;
   } else if (acidente > 3 && acidente <= 5){
-    notifyClients("ALERTA|ACIDENTE|" + String(acidente));
+    notifyClients( "CICLISTA|ALERTA|ACIDENTE|" + String(acidente));
     if (pCharacteristic){ pCharacteristic->setValue(("ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
     Serial.println("ACIDENTE CONFIRMADO");
     acidente = 0;

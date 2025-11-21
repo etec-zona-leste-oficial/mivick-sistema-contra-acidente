@@ -30,7 +30,9 @@
   // CONFIG
   const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
   const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
-  const DEVICE_NAME = "ESP32-CAM-BLE";
+  const DEVICE_NAME_ESP1 = "ESP32-CAM-BLE";
+  const DEVICE_NAME_ESP2 = "ESP32-VEICULO-BLE";
+
 
   // ---------------------- REGISTRAR DISPOSITIVO ----------------------
   async function registrarDispositivoSeNecessario(): Promise<number | null> {
@@ -45,7 +47,7 @@
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://192.168.1.7:3000/app/mivick/iot/registrar-dispositivo",
+        "http://192.168.1.10:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -104,7 +106,7 @@
         return;
       }
 
-      const response = await fetch("http://192.168.1.7:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://192.168.1.10:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +127,11 @@
   // =============================================================
   export default function ConectarDispositivo() {
     const [modalVisible, setModalVisible] = useState(false);
-    const { manager, device, setDevice, connected, setConnected } = useBle();
+    const { manager, devices, addDevice, removeDevice, connected, setConnected } = useBle();
+    const [esp1Device, setEsp1Device] = useState<Device | null>(null);
+    const [esp1Connected, setEsp1Connected] = useState(false);
+    const [esp2Device, setEsp2Device] = useState<Device | null>(null);
+    const [esp2Connected, setEsp2Connected] = useState(false);
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
@@ -173,35 +179,40 @@
     // ---------------------- BLUETOOTH SCAN ----------------------
     async function startScan() {
       if (!manager) {
-        addLog("⚠️ BLE Manager não inicializado");
+        addLog(" BLE Manager não inicializado");
         return;
       }
-      //addLog("🔍 Procurando dispositivo BLE...");
+      //addLog(" Procurando dispositivo BLE...");
       manager.startDeviceScan(null, null, (error, scannedDevice) => {
         if (error) {
           addLog("❌ Erro no scan: " + error.message);
           return;
         }
-        if (scannedDevice?.name === DEVICE_NAME) {
-          //addLog("📡 Encontrado: " + scannedDevice.name);
-          manager?.stopDeviceScan();
-          connectToDevice(scannedDevice);
-        }
+ if (scannedDevice?.name === DEVICE_NAME_ESP1 && !esp1Connected) {
+    connectToEsp1(scannedDevice);
+}
+
+if (scannedDevice?.name === DEVICE_NAME_ESP2 && !esp2Connected) {
+    connectToEsp2(scannedDevice);
+}
+if (esp1Connected && esp2Connected) manager.stopDeviceScan();
+
+
       });
     }
 
     // ---------------------- ENVIAR WI-FI VIA BLE ----------------------
     async function enviarWifi(ssid: string, senha: string) {
-      if (!device || !connected) return;
-      try {
-        const msg = `WIFI|${ssid}|${senha}`;
-        await device.writeCharacteristicWithResponseForService(
-          SERVICE_UUID,
-          CHARACTERISTIC_UUID,
-          Buffer.from(msg, "utf-8").toString("base64")
-        );
-
-        addLog("📶 Wi-Fi enviado via BLE!");
+  const target = esp1Device;
+  if (!target) return;
+  try {
+    const msg = `WIFI|${ssid}|${senha}`;
+    await target.writeCharacteristicWithResponseForService(
+      SERVICE_UUID,
+      CHARACTERISTIC_UUID,
+      Buffer.from(msg, "utf-8").toString("base64")
+    );
+    addLog("Wi-Fi enviado via BLE para ESP1");
         if (deviceId === null) return;
         // salvar no backend
         enviarParaBackend({
@@ -215,68 +226,98 @@
         Alert.alert("Erro", "Falha ao enviar credenciais.");
       }
     }
+// ---------------------- CONECTAR ESP1 ----------------------
+async function connectToEsp1(dev: Device) {
+  try {
+    const d = await dev.connect();
+    await d.discoverAllServicesAndCharacteristics();
 
-    // ---------------------- CONECTAR AO DISPOSITIVO ----------------------
-    async function connectToDevice(dev: Device) {
-      try {
-        //addLog("Conectando ao dispositivo...");
-        const connectedDevice = await dev.connect();
-        await connectedDevice.discoverAllServicesAndCharacteristics();
+    setEsp1Device(d);
+    setEsp1Connected(true);
+    setConnected(true);     // ← ADICIONE AQUI
+    addDevice(d);
+    addLog("ESP1 conectado!");
 
-        setDevice(connectedDevice);
-        setConnected(true);
+    // Monitor do ESP1
+    d.monitorCharacteristicForService(
+      SERVICE_UUID,
+      CHARACTERISTIC_UUID,
+      (error, characteristic) => {
+        if (error) return addLog("Erro ESP1: " + error.message);
 
-        addLog("✅ Conectado!");
+        const msg = Buffer.from(characteristic?.value ?? "", "base64").toString("utf8");
+        addLog("ESP1: " + msg);
 
-        // Monitor BLE
-        connectedDevice.monitorCharacteristicForService(
-          SERVICE_UUID,
-          CHARACTERISTIC_UUID,
-          (error, characteristic) => {
-            if (error) {
-              addLog("❌ Erro monitor BLE: " + error.message);
-              return;
-            }
+        if (deviceId === null) return;
 
-            const valor = Buffer.from(characteristic?.value ?? "", "base64").toString("utf-8");
-            //addLog("📩 BLE: " + valor);
-            if (deviceId === null) return;
-            // salvar log
-            enviarParaBackend({
-              id_dispositivo: deviceId,
-              ble_log: valor
-            });
+        enviarParaBackend({
+          id_dispositivo: deviceId,
+          ble_log: "ESP1: " + msg
+        });
 
-            // Respostas do ESP
-            if (valor.startsWith("WIFI_OK|")) {
-              const ip = valor.split("|")[1];
-              //addLog("🌐 Wi-Fi conectado! IP: " + ip);
-              conectarWebSocket(ip);
-            }
+        if (msg.startsWith("WIFI_OK|")) {
+          const ip = msg.split("|")[1];
+          conectarWebSocket(ip); // WS apenas do ESP1
+        }
+       if (esp2Device && inputSsid && inputPass) {
+  esp2Device.writeCharacteristicWithoutResponseForService(
+    SERVICE_UUID,
+    CHARACTERISTIC_UUID,
+    Buffer.from(`WIFI|${inputSsid}|${inputPass}`).toString("base64")
+  );
+  addLog("Wi-Fi reenviado ao ESP2 após ESP1 confirmar WIFI_OK");
+}
 
-            else if (valor.startsWith("WIFI_FAIL")) {
-              Alert.alert("Erro", "Falha ao conectar o ESP ao Wi-Fi.");
-            }
 
-            else if (valor.startsWith("VEICULO|")) {
-              addLog("🚗 Info do veículo: " + valor);
-            if (deviceId === null) return;
-              enviarParaBackend({
-              id_dispositivo: deviceId,
-              ble_log: valor
-            });
-            }
-          }
-        );
 
-        setInputSsid("");
-        setInputPass("");
-    
-      } catch (e) {
-        console.error(e);
-        Alert.alert("Erro", "Falha ao conectar.");
       }
-    }
+    );
+
+  } catch (e) {
+    console.log("Erro ESP1:", e);
+  }
+}
+
+// ---------------------- CONECTAR ESP2 ----------------------
+async function connectToEsp2(dev: Device) {
+  try {
+    const d = await dev.connect();
+    await d.discoverAllServicesAndCharacteristics();
+
+    setEsp2Device(d);
+    setEsp2Connected(true);
+    setConnected(true);     // ← ADICIONE AQUI
+    addDevice(d);
+    addLog("ESP2 conectado!");
+    
+
+    // Monitor ESP2
+    d.monitorCharacteristicForService(
+      SERVICE_UUID,
+      CHARACTERISTIC_UUID,
+      (error, characteristic) => {
+        if (error) return addLog("Erro ESP2: " + error.message);
+
+        const msg = Buffer.from(characteristic?.value ?? "", "base64").toString("utf8");
+        addLog("ESP2: " + msg);
+
+        if (deviceId === null) return;
+
+        enviarParaBackend({
+          id_dispositivo: deviceId,
+          ble_log: "ESP2: " + msg
+        });
+
+        if (msg.startsWith("VEICULO|")) {
+          // Aqui você trata mensagens do veículo
+        }
+      }
+    );
+
+  } catch (e) {
+    console.log("Erro ESP2:", e);
+  }
+}
 
     // ---------------------- WEBSOCKET ----------------------
     function conectarWebSocket(ip: string) {
@@ -295,37 +336,82 @@
           });
         };
 
-        socket.onmessage = (event) => {
-          if (typeof event.data !== "string") return;
+       socket.onmessage = (event) => {
+  if (deviceId === null) return;
 
-          // Sensor JSON
-          if (event.data.startsWith("{")) {
-            const dados = JSON.parse(event.data);
-            if (deviceId === null) return;
-            enviarParaBackend({
-              id_dispositivo: deviceId,
-              distancia: dados.distancia,
-              impacto: dados.impacto,
-              movimentacao: dados.movimentacao,
-              acidente_identificado: dados.acidente
-            });
+  const msg = event.data;
 
-            //addLog(`📊 Sensores: ${JSON.stringify(dados)}`);
-          }
+  // ========= FOTO =========
+  if (msg.startsWith("/9j/")) {
+    setImages(prev => ["data:image/jpeg;base64," + msg, ...prev]);
 
-          // Imagem
-          else if (event.data.startsWith("/9j/")) {
-            setImages((prev) => ["data:image/jpeg;base64," + event.data, ...prev]);
-          if (deviceId === null) return;
-            enviarParaBackend({
-              id_dispositivo: deviceId,
-              foto_base64: event.data
-            });
-          }
-        };
+    enviarParaBackend({
+      id_dispositivo: deviceId,
+      foto_base64: msg,
+      ws_log: "FOTO_RECEBIDA"
+    });
+
+    return;
+  }
+
+  // ========= STRINGS DO ESP =========
+  if (msg.includes("|")) {
+    const parts = msg.split("|");
+
+    // ---------------------------------
+    // 🚨 ALERTAS DE ACIDENTE
+    // Ex: CICLISTA|ALERTA|POSSIVEL_ACIDENTE|3
+    // ---------------------------------
+    if (parts[1] === "ALERTA") {
+      enviarParaBackend({
+        id_dispositivo: deviceId,
+        acidente_identificado: true,
+        movimentacao: parts[2],      // POSSIVEL_ACIDENTE
+        impacto: Number(parts[3]),   // quantidade de eventos
+        ws_log: msg
+      });
+      return;
+    }
+
+    // ---------------------------------
+    // 📏 ULTRASSÔNICO
+    // Ex: CICLISTA|ULTRASSONICO|OBJETO_PROXIMO|95.80
+    // ---------------------------------
+    if (parts[1] === "ULTRASSONICO") {
+      enviarParaBackend({
+        id_dispositivo: deviceId,
+        distancia: Number(parts[3]),
+        ws_log: msg
+      });
+      return;
+    }
+
+    // ---------------------------------
+    // 🌀 MPU / SW420
+    // Ex: CICLISTA|MPU6050|BATIDA|17.22
+    // Ex: CICLISTA|SW420|IMPACTO|1
+    // ---------------------------------
+    if (parts[1] === "MPU6050" || parts[1] === "SW420") {
+      enviarParaBackend({
+        id_dispositivo: deviceId,
+        impacto: Number(parts[3]),
+        movimentacao: parts[2],     // BATIDA / IMPACTO
+        ws_log: msg
+      });
+      return;
+    }
+  }
+
+  // ========= Fallback: Log puro =========
+  enviarParaBackend({
+    id_dispositivo: deviceId,
+    ws_log: msg
+  });
+};
+
 
         socket.onerror = () => {
-          addLog("❌ Erro no WebSocket");
+          addLog(" Erro no WebSocket");
         if (deviceId === null) return;
           enviarParaBackend({
             id_dispositivo: deviceId,
@@ -334,7 +420,7 @@
         };
 
         socket.onclose = () => {
-          addLog("⚠️ WebSocket fechado");
+          addLog(" WebSocket fechado");
         if (deviceId === null) return;
           enviarParaBackend({
             id_dispositivo: deviceId,
@@ -345,7 +431,7 @@
         setWs(socket);
 
       } catch (err) {
-        addLog("❌ Falha ao abrir WS: " + String(err));
+        addLog(" Falha ao abrir WS: " + String(err));
       }
     }
 
@@ -365,7 +451,7 @@
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const resp = await fetch(`http://192.168.1.7:3000/app/mivick/iot/wifi/${deviceId}`, {
+      const resp = await fetch(`http://192.168.1.10:3000/app/mivick/iot/wifi/${deviceId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
 
@@ -416,13 +502,13 @@
           <FirstTitle text={"Aceite a permissão para parear o dispositivo"} fontSize={30} style={{ marginVertical: 20, textAlign: "center" }} />
 
           <FirstButton
-            title={connected ? "Conectado ✅" : "Parear"}
+            title={connected ? "Conectado" : "Parear"}
             onPress={openModal}
             customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
           />
           {connected && (
     <FirstButton
-      title="Configurar Wi-Fi 📶"
+      title="Configurar Wi-Fi "
       onPress={abrirModalWifi}
       customStyle={{ width: "85%", alignSelf: "center", marginBottom: 20 }}
     />
@@ -433,7 +519,7 @@
         <FirstModal visible={modalVisible} onClose={closeModal}>
           <View style={{ padding: 16 }}>
             <Text style={{ color: "#fff", fontSize: 18, marginBottom: 8 }}>
-              {connected ? "✅ Dispositivo conectado!" : "⏳ Procurando dispositivo..."}
+              {connected ? " Dispositivo conectado!" : " Procurando dispositivo..."}
             </Text>
             {logs.slice(-10).map((l, i) => (
               <Text key={i} style={{ color: "#ccc", fontSize: 12 }}>{l}</Text>

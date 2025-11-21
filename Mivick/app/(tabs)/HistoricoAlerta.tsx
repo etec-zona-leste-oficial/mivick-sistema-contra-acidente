@@ -1,188 +1,345 @@
+import React, { useEffect, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  View,
+  Text
+} from "react-native";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-import React, { useEffect, useState } from "react";
-import { Dimensions, Image, ScrollView, View } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 export default function HistoricoAlerta() {
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const socket = new WebSocket("ws://192.168.1.10:80/ws");
+  useEffect(() => {
+    async function load() {
+      const deviceId = await AsyncStorage.getItem("device_id");
+      const token = await AsyncStorage.getItem("token");
 
-  socket.onopen = () => console.log("🌐 Conectado ao ESP32 via WebSocket");
-  socket.onmessage = (event) => {
-    const base64Image = event.data as string;
-    setImageBase64(`data:image/jpeg;base64,${base64Image}`);
-  };
-  socket.onerror = (err) => console.error("❌ Erro WebSocket:", err);
-  socket.onclose = () => console.log("⚠️ Conexão encerrada");
+      const resp = await fetch(
+        `http://192.168.1.10:3000/app/mivick/iot/historico/${deviceId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-  return () => socket.close();
-}, []);
+      const json = await resp.json();
+      setData(json);
+      setLoading(false);
+    }
+
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{
+        flex: 1,
+        backgroundColor: "#000",
+        justifyContent: "center",
+        alignItems: "center",
+      }}>
+        <Text style={{ color: "#fff" }}>Carregando...</Text>
+      </View>
+    );
+  }
+
+  // COMO É LISTA
+  const { alerta = [], logsBLE = [], logsWS = [], leitura } = data;
+
+  const alertaMaisRecente = alerta.length > 0 ? alerta[0] : null;
+  const outrosAlertas = alerta.length > 1 ? alerta.slice(1) : [];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: height * 0.05,
-        }}
-      >
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <HeaderComLogin />
 
-        {/* Título principal */}
         <FirstTitle
-          text="Histórico do alerta"
-          fontSize={Math.min(width * 0.08, 32)} 
+          text="Histórico"
+          fontSize={Math.min(width * 0.08, 32)}
           style={{
-            paddingHorizontal: width * 0.06,
             marginTop: height * 0.03,
-            marginBottom: height * 0.025
+            marginBottom: height * 0.025,
+            textAlign: "center",
           }}
         />
 
-        {/* Linha divisória */}
-        <View
-          style={{
-            height: 1,
-            backgroundColor: "#F85200",
-            width: "100%",
-            alignSelf: "center",
-            marginVertical: height * 0.00,
-            
-          }}
-        />
+        <View style={{
+          height: 1,
+          backgroundColor: "#F85200",
+          width: "100%",
+        }} />
 
-        {/* Imagem */}
-       <Image
-  source={
-    imageBase64
-      ? { uri: imageBase64 }
-      : require("@/assets/images/terceira.jpg")
-  }
-  style={{
-    width: "100%",
-    height: height * 0.25,
-    marginBottom: -height * 0.010,
-    alignItems: "center",
-    justifyContent: "center",
-  }}
-  resizeMode="cover"
-/>
-
-
-        {/* Card */}
+        {/* ======================== */}
+        {/*     ALERTA MAIS RECENTE */}
+        {/* ======================== */}
         <FirstCard
           customStyle={{
             width: "100%",
-            borderRadius: 0,
+            borderRadius: 20,
             paddingVertical: height * 0.02,
             paddingHorizontal: width * 0.05,
+            marginTop: 40,
           }}
         >
-          {/* Texto acima da imagem */}
           <View
             style={{
               borderRadius: 6,
               borderWidth: 1,
               borderColor: "#F85200",
-              marginTop: height * 0.01,
-              width: width * 0.60, 
-              height: height * 0.035, 
+              width: width * 0.6,
+              height: height * 0.035,
               justifyContent: "center",
               alignSelf: "center",
               marginBottom: height * 0.015,
             }}
           >
             <FirstSubTitle
-              text="Foto tirada no momento do alerta"
+              text="Alerta mais recente"
               style={{
                 textAlign: "center",
-                includeFontPadding: false,
-                textAlignVertical: "center",
                 fontSize: Math.min(width * 0.035, 15),
-                lineHeight: Math.min(width * 0.04, 17),
               }}
             />
           </View>
 
-          {/* Sensor Ativado */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: height * 0.012,
-              paddingHorizontal: width * 0.05,
-            }}
-          >
-            <FirstTitle
-              text="Sensor Ativado: "
-              fontSize={Math.min(width * 0.05, 20)}
-            />
-            <FirstSubTitle
-              text="Sensor de distância"
+          {alertaMaisRecente?.foto ? (
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${alertaMaisRecente.foto}` }}
               style={{
-                fontSize: Math.min(width * 0.04, 16),
-                color: "#D9D9D9",
+                width: "100%",
+                height: height * 0.22,
+                borderRadius: 8,
+                marginBottom: height * 0.02,
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <FirstSubTitle
+              text="Sem imagem registrada"
+              style={{
+                textAlign: "center",
+                color: "#bbb",
+                marginBottom: 15,
               }}
             />
-          </View>
+          )}
 
-          {/* Data */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: height * 0.012,
-              paddingHorizontal: width * 0.05,
-            }}
-          >
-            <FirstTitle text="Data: " fontSize={Math.min(width * 0.05, 20)} />
+          {alertaMaisRecente ? (
+            <>
+              <LinhaInfo label="Descrição: " value={alertaMaisRecente.descricao} />
+              <LinhaInfo label="Código: " value={alertaMaisRecente.codigo} />
+              <LinhaInfo label="Contato: " value={alertaMaisRecente.contato_nome} />
+              <LinhaInfo label="Telefone: " value={alertaMaisRecente.contato_telefone} />
+              <LinhaInfo label="Data: " value={formatarDataBonita(alertaMaisRecente.data_hora)} />
+            </>
+          ) : (
             <FirstSubTitle
-              text="16/06/2025"
-              style={{
-                fontSize: Math.min(width * 0.04, 16),
-                color: "#D9D9D9",
-              }}
+              text="Nenhum alerta encontrado."
+              style={{ color: "#bbb", textAlign: "center" }}
             />
-          </View>
+          )}
 
-          {/* Situação */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: height * 0.012,
-              paddingHorizontal: width * 0.05,
-            }}
-          >
-            <FirstTitle text="Situação: " fontSize={Math.min(width * 0.05, 20)} />
-            <FirstSubTitle
-              text="Alerta desligado"
-              style={{
-                fontSize: Math.min(width * 0.04, 16),
-                color: "#D9D9D9",
-              }}
-            />
-          </View>
+          {/* LEITURA (SENSOR) */}
+          {leitura && (
+            <>
+              <LinhaInfo
+                label="Sensor ativado: "
+                value={
+                  leitura.distancia
+                    ? "Sensor de Distância"
+                    : leitura.impacto
+                    ? "Sensor de Impacto"
+                    : leitura.movimentacao
+                    ? "Movimentação"
+                    : "Desconhecido"
+                }
+              />
+
+              <LinhaInfo
+                label="Data: "
+                value={formatarDataBonita(leitura.data_hora)}
+              />
+
+              <LinhaInfo
+                label="Situação: "
+                value={
+                  leitura.acidente_identificado
+                    ? "🚨 Acidente detectado"
+                    : "Alerta desligado"
+                }
+              />
+            </>
+          )}
         </FirstCard>
 
-        {/* Linha final */}
-        <View
-          style={{
-            height: 1,
-            backgroundColor: "#F85200",
-            width: "85%",
-            alignSelf: "center",
-            marginTop: -height * 0.015, 
-
-            
-          }}
+        {/* ======================== */}
+        {/*        OUTROS ALERTAS    */}
+        {/* ======================== */}
+        <FirstTitle
+          text="Últimos alertas"
+          fontSize={26}
+          style={{ marginTop: 20, paddingLeft: 20 }}
         />
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+          {outrosAlertas.length ? outrosAlertas.map((alerta: any, i: number) => (
+            <FirstCard key={i} customStyle={{
+              width: width * 0.75,
+              padding: 20,
+              marginRight: 15,
+            }}>
+              {alerta.foto ? (
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${alerta.foto}` }}
+                  style={{
+                    width: "100%",
+                    height: 140,
+                    borderRadius: 10,
+                    marginBottom: 15,
+                  }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <FirstSubTitle
+                  text="Sem imagem registrada"
+                  style={{ textAlign: "center", color: "#bbb", marginBottom: 15 }}
+                />
+              )}
+
+              <LinhaInfo label="Descrição: " value={alerta.descricao} />
+              <LinhaInfo label="Código: " value={alerta.codigo} />
+              <LinhaInfo label="Contato: " value={alerta.contato_nome} />
+              <LinhaInfo label="Telefone: " value={alerta.contato_telefone} />
+              <LinhaInfo label="Data: " value={formatarDataBonita(alerta.data_hora)} />
+            </FirstCard>
+          )) : (
+            <FirstCard customStyle={{
+              width: width * 0.75,
+              padding: 20,
+              alignItems: "center",
+            }}>
+              <FirstSubTitle text="Nenhum alerta encontrado." style={{ color: "#bbb" }} />
+            </FirstCard>
+          )}
+        </ScrollView>
+
+        {/* ======================== */}
+        {/*        HISTÓRICO BLE      */}
+        {/* ======================== */}
+        <SectionHistorico
+          titulo="Histórico Bluetooth"
+          dados={logsBLE}
+        />
+
+        {/* ======================== */}
+        {/*        HISTÓRICO WIFI     */}
+        {/* ======================== */}
+        <SectionHistorico
+          titulo="Histórico Wi-Fi"
+          dados={logsWS}
+        />
+
       </ScrollView>
     </View>
   );
+}
+
+/* -------------------------------------------
+   COMPONENTE DE HISTÓRICO (BLE / WIFI)
+-------------------------------------------- */
+function SectionHistorico({
+  titulo,
+  dados,
+}: {
+  titulo: string;
+  dados: any[];
+}) {
+  const { width } = Dimensions.get("window");
+
+  return (
+    <>
+      <FirstTitle
+        text={titulo}
+        fontSize={26}
+        style={{ marginTop: 20, paddingLeft: 20 }}
+      />
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
+        {dados.length ? dados.map((item: any, i: number) => (
+          <FirstCard
+            key={i}
+            customStyle={{
+              width: width * 0.75,
+              padding: 20,
+              marginRight: 15,
+            }}
+          >
+            <LinhaInfo label="Data: " value={formatarDataBonita(item.data_hora)} />
+            <LinhaInfo label="Mensagem: " value={item.mensagem} />
+          </FirstCard>
+        )) : (
+          <FirstCard customStyle={{
+            width: width * 0.75,
+            padding: 20,
+            alignItems: "center",
+          }}>
+            <FirstSubTitle text="Nenhum registro encontrado." style={{ color: "#bbb" }} />
+          </FirstCard>
+        )}
+      </ScrollView>
+    </>
+  );
+}
+
+/* -------------------------------------------
+   LINHA INFO (label + valor)
+-------------------------------------------- */
+function LinhaInfo({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={{
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: height * 0.012,
+    }}>
+      <FirstTitle text={label} fontSize={Math.min(width * 0.05, 20)} />
+      <FirstSubTitle
+        text={value}
+        style={{
+          fontSize: Math.min(width * 0.04, 16),
+          color: "#D9D9D9",
+        }}
+      />
+    </View>
+  );
+}
+
+/* -------------------------------------------
+   FORMATADOR DE DATA
+-------------------------------------------- */
+function formatarDataBonita(dataStr: string) {
+  const data = new Date(dataStr);
+  if (isNaN(data.getTime())) return dataStr;
+
+  const dia = String(data.getDate()).padStart(2, "0");
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const ano = data.getFullYear();
+  const hora = String(data.getHours()).padStart(2, "0");
+  const min = String(data.getMinutes()).padStart(2, "0");
+
+  return `${dia}/${mes}/${ano} às ${hora}:${min}`;
 }
