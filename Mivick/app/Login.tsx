@@ -177,7 +177,7 @@ export default function Login() {
       <View style={styles.content}>
 
         {/* Título da tela */}
-        <FirstTitle text="Login" fontSize={35} />
+        <FirstTitle text="Fazer Login" fontSize={35} />
 
         {/* Campo de email */}
         <FirstTextField

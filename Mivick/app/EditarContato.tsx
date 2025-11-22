@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Alert, Dimensions, ActivityIndicator, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import Toast from "react-native-toast-message";
+
 
 // Componentes reutilizáveis
 import { HeaderComLogin } from '@/components/HeaderComLogin';
@@ -23,7 +25,6 @@ export default function EditarContato() {
 
   // ID do contato passado pela rota
   const { id_contato } = useLocalSearchParams();
-  console.log("ID recebido ->", id_contato);
 
   // Estados dos campos de edição
   const [nome, setNome] = useState('');
@@ -60,18 +61,25 @@ export default function EditarContato() {
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
           const raw = await response.text();
-          console.log("⚠️ RESPOSTA RAW:", raw);
-          Alert.alert("Erro", "Resposta inválida do servidor.");
           setLoading(false);
+          Toast.show({
+            type: "error",
+            text1: "Erro",
+            text2: "Resposta inválida do servidor.",
+          });
           return;
         }
 
         const data = await response.json();
-        console.log("📌 Dados recebidos da API:", JSON.stringify(data, null, 2));
+        console.log("Dados recebidos da API:", JSON.stringify(data, null, 2));
 
         const contato = data.contact;
         if (!contato) {
-          Alert.alert("Erro", "Contato não encontrado.");
+          Toast.show({
+            type: "error",
+            text1: "Erro",
+            text2: "Contato não encontrado.",
+          });
           setLoading(false);
           return;
         }
@@ -98,7 +106,13 @@ export default function EditarContato() {
 
       } catch (error) {
         console.error("Erro ao carregar contato:", error);
-        Alert.alert("Erro", "Falha ao carregar os dados do contato.");
+
+        Toast.show({
+          type: "error",
+          text1: "Erro ao carregar contato",
+          text2: "Falha ao carregar os dados do contato.",
+        });
+
       } finally {
         setLoading(false);
       }
@@ -124,7 +138,11 @@ export default function EditarContato() {
     try {
       // validação simples antes do envio
       if (!nome || !telefone || !email) {
-        Alert.alert('Erro', 'Preencha todos os campos obrigatórios!');
+        Toast.show({
+          type: "error",
+          text1: "Preencha todos os campos obrigatórios.",
+        });
+        setLoading(false);
         return;
       }
 
@@ -156,15 +174,27 @@ export default function EditarContato() {
       const data = await safeParseResponse(response);
 
       if (response.ok) {
-        Alert.alert("Sucesso", data.message || "Contato atualizado!");
+        Toast.show({
+          type: "success",
+          text1: "Contato atualizado com sucesso!",
+        });
+        
         router.push("/Contatos");
       } else {
-        Alert.alert("Erro", data.error || "Falha ao atualizar contato");
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao atualizar o contato',
+          text2: data.error || 'Falha ao atualizar o contato.',
+          
+        })
       }
 
     } catch (error) {
-      console.error("Erro geral:", error);
-      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+      Toast.show({
+        type: "error",
+        text1 : "Erro de conexão",
+        text2 : "Não foi possível conectar ao servidor."
+      })
     }
   };
 

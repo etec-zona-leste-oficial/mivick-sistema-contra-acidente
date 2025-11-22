@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { View, ScrollView, Alert, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from "react-native-toast-message";
+
 
 // Componentes personalizados do projeto
 import { HeaderComLogin } from '../components/HeaderComLogin';
@@ -66,7 +68,11 @@ export default function CadastrarContato() {
         try {
             // Validação simples
             if (!nome || !telefone || !email) {
-                Alert.alert('Erro', 'Preencha todos os campos obrigatórios!');
+                Toast.show({
+                    type: 'error',
+                    text1: 'Por favor, preencha todos os campos obrigatórios.'
+                })
+
                 return;
             }
 
@@ -74,7 +80,10 @@ export default function CadastrarContato() {
             const token = await AsyncStorage.getItem("token");
 
             if (!token) {
-                Alert.alert("Erro", "Usuário não autenticado.");
+                Toast.show({
+                    type: 'error',
+                    text1: 'Usuário não encontrado.'
+                })
                 return;
             }
 
@@ -107,7 +116,10 @@ export default function CadastrarContato() {
 
             // Verifica se foi sucesso
             if (response.ok) {
-                Alert.alert("Sucesso", data.message || "Contato cadastrado!");
+                Toast.show({
+                    type: 'success',
+                    text1: 'Contato cadastrado com sucesso!'
+                })
 
                 // Limpa campos depois do cadastro
                 setNome('');
@@ -119,13 +131,18 @@ export default function CadastrarContato() {
                 // Redireciona para lista de contatos
                 router.push('./Contatos');
             } else {
-                Alert.alert("Erro", data.error || data.message || "Falha ao cadastrar contato");
-                console.error("Erro:", data);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Erro ao cadastrar contato',
+                    text2: data.error || 'Falha ao cadastrar contato.'
+                })
             }
 
         } catch (error) {
-            console.error("Erro geral:", error);
-            Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+            Toast.show({
+                type: 'error',
+                text1: 'Erro ao tentar conectar-se com servidor.'
+            })
         }
     };
 

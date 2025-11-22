@@ -10,6 +10,8 @@ import { FirstTitle } from '../../components/FirstTitle';
 import { HeaderComLogin } from '../../components/HeaderComLogin';
 import { styles } from '../../components/styles/styleContato';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
+import Toast from "react-native-toast-message";
+
 
 // --------------------
 // Tipagem dos contatos
@@ -62,7 +64,10 @@ export default function ContatoScreen() {
         // Seta lista de contatos
         setContacts(data.contacts as Contact[]);
       } else {
-        console.log("Erro ao carregar contatos:", data.error);
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao carregar contatos',
+        });
       }
     } catch (err) {
       console.log("Erro:", err);
@@ -92,7 +97,10 @@ export default function ContatoScreen() {
         // Remove contato da lista atual sem precisar recarregar tudo
         setContacts(prev => prev.filter(c => c.id_contato !== selectedContactId));
       } else {
-        console.log("Erro ao excluir.");
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao excluir contato',
+        })
       }
     } catch (err) {
       console.log("Erro:", err);
