@@ -96,6 +96,10 @@ export default function Login() {
 
       // Redirecionamento após login bem-sucedido
       router.push("./Home");
+      Toast.show({
+        type: "success",
+        text1: "Login realizado com sucesso!"
+      })
 
     } catch (error) {
       console.error("Erro ao logar:", error);
