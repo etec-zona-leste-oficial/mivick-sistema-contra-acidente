@@ -22,12 +22,11 @@ export default function SplashScreen() {
       }),
       Animated.spring(logoScale, {
         toValue: 1,
-        bounciness: 14,       // ❗ Apenas bounciness/speed
+        bounciness: 14,       
         speed: 6,
         useNativeDriver: true,
       })
     ]).start();
-
     // 2️⃣ Texto aparece com fade + slide
     Animated.parallel([
       Animated.timing(textOpacity, {
