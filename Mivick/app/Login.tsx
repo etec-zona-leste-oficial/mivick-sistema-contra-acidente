@@ -19,6 +19,7 @@ import { styles } from '../components/styles/styleLogin';
 
 const { height } = Dimensions.get("window");
 
+
 // =============================================================
 // Configuração Google Sign-In
 // Obrigatório para permitir login via Google
@@ -30,6 +31,7 @@ GoogleSignin.configure({
 
 export default function Login() {
   const router = useRouter();
+
 
   // Estado para checkbox dos termos de uso
   const [agreeToTerms, setAgreeToTerms] = useState(false);

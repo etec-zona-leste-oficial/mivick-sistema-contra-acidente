@@ -1,31 +1,30 @@
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { FirstButton } from '@/components/FirstButton';
 import { FirstCarrousel } from '@/components/FirstCarrousel';
+import { useRouter } from 'expo-router';
 import { styles } from '../components/styles/styleHome';
+import { Redirect } from "expo-router";
 
-// Imagens do carrossel
 const carouselImages = [
   require('../assets/images/ciclimoto.jpg'),
   require('../assets/images/Rodovia.jpg'),
-  require('../assets/images/Moto.jpg'),
+  require('../assets/images/Moto.jpg')
 ];
 
-export default function Index() {
+export default function Home() {
   const router = useRouter();
+   // return <Redirect href="/SplashScreen" />;
 
   return (
     <View style={styles.container}>
       {/* Carrossel */}
       <FirstCarrousel images={carouselImages} />
 
-      {/* Área sobreposta */}
-      <View style={styles.overlayContent}>
-        <View style={{ height: 16 }} />
-      </View>
+      {/* Conteúdo */}
+      <View style={styles.overlayContent}></View>
 
-      {/* Botões na parte inferior */}
+      {/* Botões */}
       <View style={styles.bottomButtons}>
         <FirstButton
           title="Login"
@@ -33,7 +32,6 @@ export default function Index() {
           customStyle={styles.loginButton}
           customTextStyle={styles.loginButtonText}
         />
-
         <FirstButton
           title="Cadastro"
           onPress={() => router.push('/Cadastro')}
