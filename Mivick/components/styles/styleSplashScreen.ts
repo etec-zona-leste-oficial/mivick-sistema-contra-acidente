@@ -1,12 +1,11 @@
-// screens/stylesSplash.ts
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000', // fundo preto como você usa
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   logo: {
@@ -16,8 +15,10 @@ export const styles = StyleSheet.create({
   },
 
   text: {
-    color: '#FF4500',
+    color: "#FF4500",
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "700",
+    marginTop: 10,
+    letterSpacing: 0.8,
   },
 });
