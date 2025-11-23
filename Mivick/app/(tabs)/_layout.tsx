@@ -3,8 +3,67 @@ import FontProvider from '@/components/providers/FontProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Audio } from "expo-av";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+async function tocarSomAlerta() {
+  const { sound } = await Audio.Sound.createAsync(
+    require("../assets/alerta.mp3")
+  );
+  await sound.playAsync();
+}
 
+async function buscarUltimoAlerta(id_dispositivo: number, token: string) {
+  const resp = await fetch(
+    `http://192.168.1.14:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  const json = await resp.json();
+  if (!json.ok) return null;
+
+  return json.datahora;
+}
 export default function TabsLayout() {
+  useEffect(() => {
+    let interval: any;
+
+    async function iniciarMonitoramento() {
+      const token = await AsyncStorage.getItem("token");
+      const id = await AsyncStorage.getItem("device_id");
+
+      if (!token || !id) return;
+
+      interval = setInterval(async () => {
+        const datahoraAlerta = await buscarUltimoAlerta(Number(id), token);
+        if (!datahoraAlerta) return;
+
+        const agora = new Date();
+        const alerta = new Date(datahoraAlerta);
+
+        // Mesmo dia?
+        const mesmoDia =
+          alerta.getFullYear() === agora.getFullYear() &&
+          alerta.getMonth() === agora.getMonth() &&
+          alerta.getDate() === agora.getDate();
+
+        if (!mesmoDia) return;
+
+        // Diferença em segundos
+        const diff = Math.abs((agora.getTime() - alerta.getTime()) / 1000);
+
+        if (diff <= 15) {
+          tocarSomAlerta();
+        }
+      }, 5000); // verifica a cada 5s
+    }
+
+    iniciarMonitoramento();
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <BleProvider>
     <FontProvider>
