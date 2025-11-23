@@ -12,7 +12,7 @@ const carouselImages = [
   require('../assets/images/Moto.jpg')
 ];
 
-export default function Home() {
+export default function Inicial() {
   const router = useRouter();
    // return <Redirect href="/SplashScreen" />;
 

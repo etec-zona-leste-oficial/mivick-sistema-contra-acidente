@@ -10,6 +10,7 @@ import { FirstButton } from '@/components/FirstButton';
 import FontProvider from '@/components/providers/FontProvider';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from "react-native-toast-message";
+import { styles } from '@/components/styles/stylePerfil'
 
 
 const { width, height } = Dimensions.get('window');
@@ -214,6 +215,13 @@ export default function Perfil() {
         }}
         showsVerticalScrollIndicator={false}
       >
+
+        <LinearGradient
+          colors={['#F85200',  '#000']}
+          start={{x: 0.5, y: 0}}
+          end={{x:0.5, y:1}}
+          style={styles.linearGrad}
+        />
 
         {/* Área da foto de perfil */}
         <View
