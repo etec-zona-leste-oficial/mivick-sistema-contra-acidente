@@ -22,6 +22,8 @@ import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import Toast from "react-native-toast-message";
+import { BackButton } from '@/components/BackButton/BackButton';
+
 
 
 // Stylesheet da página
@@ -179,6 +181,9 @@ export default function Cadastro() {
     <SafeAreaView style={styles.container}>
       {/* Header fixo do app */}
       <Header />
+      <BackButton />
+
+
 
       <View style={styles.content}>
 

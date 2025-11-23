@@ -12,6 +12,7 @@ import { FirstTextField } from '@/components/FirstTextField';
 import { FirstButton } from '@/components/FirstButton';
 import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 import { useRouter } from 'expo-router';
+import { BackButton } from '@/components/BackButton/BackButton';
 
 // Estilos da tela
 import { styles } from '../components/styles/styleCadastrarContato';
@@ -150,6 +151,7 @@ export default function CadastrarContato() {
         <View style={{ flex: 1 }}>
             {/* Header fixo com usuário logado */}
             <HeaderComLogin />
+            <BackButton/>
 
             {/* Scroll da página */}
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

@@ -17,6 +17,7 @@ import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import { styles } from '../components/styles/styleLogin';
+import { BackButton } from '@/components/BackButton/BackButton';
 
 const { height } = Dimensions.get("window");
 
@@ -173,8 +174,10 @@ export default function Login() {
 
       {/* Cabeçalho da aplicação */}
       <Header />
+        <BackButton/>
 
       <View style={styles.content}>
+
 
         {/* Título da tela */}
         <FirstTitle text="Fazer Login" fontSize={35} />
