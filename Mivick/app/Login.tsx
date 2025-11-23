@@ -18,6 +18,7 @@ import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import { styles } from '../components/styles/styleLogin';
 import { BackButton } from '@/components/BackButton/BackButton';
+import { FirstModalTerms } from '@/components/FirstModalTerms/FirstModal';
 
 const { height } = Dimensions.get("window");
 
@@ -33,6 +34,9 @@ GoogleSignin.configure({
 
 export default function Login() {
   const router = useRouter();
+
+  // Modal de Termos de Uso
+  const [modalVisible, setModalVisible] = useState(false);
 
 
   // Estado para checkbox dos termos de uso
@@ -174,7 +178,7 @@ export default function Login() {
 
       {/* Cabeçalho da aplicação */}
       <Header />
-        <BackButton/>
+      <BackButton />
 
       <View style={styles.content}>
 
@@ -238,11 +242,37 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          <Text style={styles.checkboxText}>
-            Ao clicar, você concorda com os{" "}
-            <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
-          </Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Text style={styles.checkboxText}>
+              Ao clicar, você concorda com os{" "}
+              <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
+            </Text>
+          </TouchableOpacity>
         </View>
+
+
+        {/*Modal de Termos de Uso */}
+        <FirstModalTerms
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        >
+          {`
+            Bem-vindo ao Mivick! Ao utilizar nosso aplicativo, você concorda com os seguintes termos de uso:
+
+            Utilização de informações pessoais para fins de pesquisa e funcionalidades do app.   
+
+            Envio de mensagens a contatos salvos no seu dispositivo.
+
+            Armazenamento local de dados para melhorar a experiência do usuário.
+
+            Não nos responsabilizamos por qualquer dano ou perda de dados causados por mau uso do aplicativo.
+
+            Reservamo-nos o direito de modificar estes termos a qualquer momento.
+            Recomendamos que você os revise periodicamente.
+          `}
+        </FirstModalTerms>
+
+
 
       </View>
     </SafeAreaView>

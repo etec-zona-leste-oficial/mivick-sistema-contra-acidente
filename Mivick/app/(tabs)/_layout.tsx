@@ -53,7 +53,7 @@ export default function TabsLayout() {
           options={{
             title: 'Contatos',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="alert-circle-outline" color={color} size={size} />
+              <Ionicons name="people-outline" color={color} size={size} />
             ),
           }}
         />
