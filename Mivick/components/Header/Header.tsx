@@ -13,7 +13,7 @@ export function Header() {
       <View style={styles.spacer} />
 
       {/* Logo central clicável */}
-      <TouchableOpacity onPress={() => router.push('/')}>
+      <TouchableOpacity onPress={() => router.push('/Home')}>
         <Logo />
       </TouchableOpacity>
 

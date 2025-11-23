@@ -66,7 +66,7 @@ export default function SplashScreen() {
 
     // Redirecionamento
     const timeout = setTimeout(() => {
-      router.replace("./index");
+      router.replace("/Home");
     }, 3800);
 
     return () => {
