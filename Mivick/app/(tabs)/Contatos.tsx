@@ -280,19 +280,20 @@ export default function ContatoScreen() {
               alignItems: 'center',
             }}
           >
-            <Text
+            {/* Título usando mesma fonte do app */}
+            <FirstTitle
+              text="Tem certeza que deseja excluir este contato?"
               style={{
                 color: '#fff',
-                fontSize: 20,
+                fontSize: 20 * fontScale,
                 marginBottom: width * 0.05,
                 textAlign: 'center',
               }}
-            >
-              Tem certeza que deseja excluir este contato?
-            </Text>
+            />
 
-            {/* Botões do modal */}
+            {/* Botões */}
             <View style={{ flexDirection: 'row', gap: width * 0.06 }}>
+
               {/* Cancelar */}
               <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
                 <View
@@ -303,7 +304,10 @@ export default function ContatoScreen() {
                     borderRadius: 10,
                   }}
                 >
-                  <Text style={{ color: '#fff' }}>Cancelar</Text>
+                  <FirstTitle
+                    text="Cancelar"
+                    style={{ color: '#fff', fontSize: 17 * fontScale }}
+                  />
                 </View>
               </TouchableOpacity>
 
@@ -317,14 +321,19 @@ export default function ContatoScreen() {
                     borderRadius: 10,
                   }}
                 >
-                  <Text style={{ color: '#fff' }}>Excluir</Text>
+                  <FirstTitle
+                    text="Excluir"
+                    style={{ color: '#fff', fontSize: 17 * fontScale }}
+                  />
                 </View>
               </TouchableOpacity>
+
             </View>
 
           </View>
         </View>
       </Modal>
+
     </View>
   );
 }
