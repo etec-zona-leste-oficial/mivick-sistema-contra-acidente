@@ -21,7 +21,7 @@ type Contact = {
   foto?: string | null;
 };
 
-const BASE_URL = 'http://192.168.15.66:3000';
+const BASE_URL = 'http://192.168.1.14:3000';
 const API_URL = `${BASE_URL}/app/mivick/contact/`;
 
 export default function ContatoScreen() {
@@ -187,7 +187,7 @@ export default function ContatoScreen() {
 
               {/* Editar */}
               <TouchableOpacity
-                onPress={() =>
+                onPress={() =>      
                   router.push({
                     pathname: "/EditarContato",
                     params: { id_contato: String(contact.id_contato) }

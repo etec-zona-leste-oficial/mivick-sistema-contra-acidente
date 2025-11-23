@@ -125,6 +125,34 @@ void sendPhotoWS(){
   lastPhotoMillis = millis();
 }
 
+// antes: void sendBLE(String s) { if (!pCharacteristic) return; pCharacteristic->setValue(s.c_str()); pCharacteristic->notify(); }
+// substitua por:
+void sendBLE(const String &s) {
+  if (!pCharacteristic) return;
+  const char* buf = s.c_str();
+  size_t len = s.length(); // sem o null terminator
+  pCharacteristic->setValue((uint8_t*)buf, len);
+  pCharacteristic->notify();
+}
+
+// new helper: envia leitura via WS (notifyClients) e depois envia foto
+void sendReadingThenPhoto(const String &reading, unsigned long waitMs = 600) {
+  // envia leitura via WS para app
+  if (wsStarted) {
+    notifyClients(reading);           // app recebe leitura
+    delay(waitMs);                    // espera app processar / enviar ao backend
+    sendPhotoWS();                    // envia foto depois
+  } else {
+    // fallback: ainda notifica via BLE e tenta foto via WS (se WS não estiver ativo, foto não envia)
+    sendBLE(reading);
+    if (wsStarted) {
+      delay(waitMs);
+      sendPhotoWS();
+    }
+  }
+}
+
+
 // ---------- BLE callbacks ----------
 class MyServerCallbacks : public NimBLEServerCallbacks {
   void onConnect(NimBLEServer* s) override {
@@ -236,83 +264,99 @@ if (wifiReady && WiFi.status() != WL_CONNECTED) {
 // ---------- LOOP ----------
 void loop(){
 
-  // Ultrassônico
-  if (sensorActive){
-    digitalWrite(TRIG_PIN, LOW);
-    delayMicroseconds(2);
-    digitalWrite(TRIG_PIN, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIG_PIN, LOW);
-    long duration = pulseIn(ECHO_PIN, HIGH, 30000);
-    float distance_cm = (duration == 0) ? -1 : (duration / 2.0) * 0.0343; // MESMA FÓRMULA
-    if (distance_cm > 0 && distance_cm <= 100){
-      Serial.printf("Objeto a %.2f cm\n", distance_cm);
-      acidente++;
-      if (wsStarted) sendPhotoWS();
-      notifyClients("VEICULO|ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm,2));
-      delay(300);
+// Ultrassônico
+if (sensorActive){
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+  float distance_cm = (duration == 0) ? -1 : (duration / 2.0) * 0.0343;
+  if (distance_cm > 0 && distance_cm <= 100){
+    Serial.printf("Objeto a %.2f cm\n", distance_cm);
+    acidente++;
+
+    // enviar leitura via WS primeiro e só então enviar foto
+    String reading = "CICLISTA|ULTRASSONICO|OBJETO_PROXIMO|" + String(distance_cm, 2);
+    sendReadingThenPhoto(reading, 600);
+
+    delay(300);
+  }
+}
+
+ // MPU6050
+if (mpuActive){
+  static bool mpuInit = false;
+  if (!mpuInit){
+    uint8_t status = mpu.begin();
+    if (status == 0){
+      mpu.calcOffsets(true, true);
+      mpuInit = true;
+      Serial.println("MPU iniciado");
+    } else {
+      Serial.printf("MPU begin status=%u\n", status);
     }
   }
-
-  // MPU6050
-  if (mpuActive){
-    static bool mpuInit = false;
-    if (!mpuInit){
-      uint8_t status = mpu.begin();
-      if (status == 0){
-        mpu.calcOffsets(true, true);
-        mpuInit = true;
-        Serial.println("MPU iniciado");
-      } else {
-        Serial.printf("MPU begin status=%u\n", status);
-      }
-    }
-    if (mpuInit){
-      mpu.update();
-      float acc = sqrt(mpu.getAccX()*mpu.getAccX() + mpu.getAccY()*mpu.getAccY() + mpu.getAccZ()*mpu.getAccZ());
-      if (acc > 15.0){
-        Serial.println("Impacto MPU");
-        acidente++;
-        if (pCharacteristic){
-          pCharacteristic->setValue("MPU6050|BATIDA");
-          pCharacteristic->notify();
-        }
-        notifyClients("VEICULO|MPU6050|BATIDA|" + String(acc,2));
-        if (wsStarted) sendPhotoWS();
-        delay(400);
-      }
-    }
-  }
-
-  // SW420
-  if (sw420Active){
-    int v = digitalRead(SW420_PIN);
-    if (v == HIGH && millis() - lastImpactTime > 1000){
-      lastImpactTime = millis();
-      Serial.println("Impacto SW420");
+  if (mpuInit){
+    mpu.update();
+    float acc = sqrt(mpu.getAccX()*mpu.getAccX() + mpu.getAccY()*mpu.getAccY() + mpu.getAccZ()*mpu.getAccZ());
+    if (acc > 15.0){
+      Serial.println("Impacto MPU");
       acidente++;
-      if (pCharacteristic){
-        pCharacteristic->setValue("SW420|IMPACTO");
-        pCharacteristic->notify();
-      }
-      notifyClients("VEICULO|SW420|IMPACTO|1");
-      if (wsStarted) sendPhotoWS();
+
+      // envia BLE (opcional) e envia leitura+foto via WS
+      sendBLE("MPU6050|BATIDA");
+      String reading = "CICLISTA|MPU6050|BATIDA|" + String(acc, 2);
+      sendReadingThenPhoto(reading, 600);
+
       delay(400);
     }
   }
+}
 
-  // Classificacao
-  if (acidente >= 2 && acidente <= 3){
-    notifyClients("VEICULO|ALERTA|POSSIVEL_ACIDENTE|" + String(acidente));
-    if (pCharacteristic){ pCharacteristic->setValue(("POSSIVEL_ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
-    Serial.println("POSSIVEL ACIDENTE");
-    acidente = 0;
-  } else if (acidente > 3 && acidente <= 5){
-    notifyClients( "VEICULO|ALERTA|ACIDENTE|" + String(acidente));
-    if (pCharacteristic){ pCharacteristic->setValue(("ACIDENTE|" + String(acidente)).c_str()); pCharacteristic->notify(); }
-    Serial.println("ACIDENTE CONFIRMADO");
-    acidente = 0;
+ // SW420
+if (sw420Active){
+  int v = digitalRead(SW420_PIN);
+  if (v == HIGH && millis() - lastImpactTime > 1000){
+    lastImpactTime = millis();
+    Serial.println("Impacto SW420");
+    acidente++;
+
+    // envia BLE (opcional) e envia leitura+foto via WS
+    sendBLE("SW420|IMPACTO");
+    String reading = "CICLISTA|SW420|IMPACTO|1";
+    sendReadingThenPhoto(reading, 600);
+
+    delay(400);
   }
+}
+
+
+// Classificacao
+if (acidente >= 2 && acidente <= 3){
+  String alert = "CICLISTA|ALERTA|POSSIVEL_ACIDENTE|" + String(acidente);
+  notifyClients(alert);
+  sendBLE(("POSSIVEL_ACIDENTE|" + String(acidente)).c_str());
+  // envie foto logo depois (para garantir vinculação)
+  if (wsStarted) {
+    delay(600);
+    sendPhotoWS();
+  }
+  Serial.println("POSSIVEL ACIDENTE");
+  acidente = 0;
+} else if (acidente > 3 && acidente <= 5){
+  String alert = "CICLISTA|ALERTA|ACIDENTE|" + String(acidente);
+  notifyClients(alert);
+  sendBLE(("ACIDENTE|" + String(acidente)).c_str());
+  if (wsStarted) {
+    delay(600);
+    sendPhotoWS();
+  }
+  Serial.println("ACIDENTE CONFIRMADO");
+  acidente = 0;
+}
+
 
   // Reset contador se sem eventos
   if (millis() - lastResetTime > 5000 && acidente > 0){
