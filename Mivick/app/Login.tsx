@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Dimensions, SafeAreaView, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { GoogleSignin, User, isSuccessResponse } from "@react-native-google-signin/google-signin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from "react-native-toast-message";
 
 // =============================================================
 // Importação de componentes customizados
@@ -16,8 +17,10 @@ import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import { styles } from '../components/styles/styleLogin';
+import { BackButton } from '@/components/BackButton/BackButton';
 
 const { height } = Dimensions.get("window");
+
 
 // =============================================================
 // Configuração Google Sign-In
@@ -30,6 +33,7 @@ GoogleSignin.configure({
 
 export default function Login() {
   const router = useRouter();
+
 
   // Estado para checkbox dos termos de uso
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -50,16 +54,23 @@ export default function Login() {
   async function handleLogin() {
     // Validação básica dos campos obrigatórios
     if (!email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos!");
+      Toast.show({
+        type: 'error',
+        text1: 'Por favor, preencha todos os campos!'
+      })
+
       return;
     }
 
     // Termos de uso obrigatórios
     if (!agreeToTerms) {
-      Alert.alert("Atenção", "Você precisa concordar com os termos de uso!");
+      Toast.show({
+        type: 'error',
+        text1: 'Você precisa concordar com os termos de uso!'
+      })
+
       return;
     }
-
     try {
       // Requisição ao backend para autenticação
       const response = await fetch(`${API_URL}/app/mivick/user/login`, {
@@ -72,20 +83,35 @@ export default function Login() {
 
       // Tratamento de erro de autenticação
       if (!response.ok) {
-        Alert.alert("Erro", data.error || "Falha ao fazer login");
+        Toast.show({
+          type: "error",
+          text1: "Erro ao fazer login",
+          text2: data.error || "Falha ao fazer login",
+        });
         return;
       }
+
 
       // Armazenando token JWT localmente
       await AsyncStorage.setItem("token", data.token);
 
       // Redirecionamento após login bem-sucedido
       router.push("./Home");
+      Toast.show({
+        type: "success",
+        text1: "Login realizado com sucesso!"
+      })
 
     } catch (error) {
       console.error("Erro ao logar:", error);
-      Alert.alert("Erro", "Falha de conexão com o servidor");
+
+      Toast.show({
+        type: "error",
+        text1: "Erro de conexão",
+        text2: "Falha de conexão com o servidor",
+      });
     }
+
   }
 
   // =============================================================
@@ -145,14 +171,16 @@ export default function Login() {
   // =============================================================
   return (
     <SafeAreaView style={styles.container}>
-      
+
       {/* Cabeçalho da aplicação */}
       <Header />
+        <BackButton/>
 
       <View style={styles.content}>
-        
+
+
         {/* Título da tela */}
-        <FirstTitle text="Login" fontSize={35} />
+        <FirstTitle text="Fazer Login" fontSize={35} />
 
         {/* Campo de email */}
         <FirstTextField

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { styles } from "../components/styles/styleSplashScreen";
@@ -6,75 +6,80 @@ import { styles } from "../components/styles/styleSplashScreen";
 export default function SplashScreen() {
   const router = useRouter();
 
-  // Valores animados
+
+  // LOGO ANIMATIONS
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.6)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(20)).current;
+  const logoScale = useRef(new Animated.Value(0.7)).current;
+
+  // TEXT GLOW
   const textGlow = useRef(new Animated.Value(1)).current;
 
+  // TYPEWRITER STATE
+  const fullText = "Mivick, segurança é essencial.";
+  const [displayedText, setDisplayedText] = useState("");
+
   useEffect(() => {
+    // Logo: fade + scale suave
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 700,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.spring(logoScale, {
+      Animated.timing(logoScale, {
         toValue: 1,
-        bounciness: 14,       
-        speed: 6,
-        useNativeDriver: true,
-      })
-    ]).start();
-    // 2️⃣ Texto aparece com fade + slide
-    Animated.parallel([
-      Animated.timing(textOpacity, {
-        toValue: 1,
-        duration: 600,
-        delay: 400,
+        duration: 900,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(slideUp, {
-        toValue: 0,
-        duration: 600,
-        delay: 400,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      })
     ]).start();
 
-    // 3️⃣ Efeito de glow pulsante
+    // Glow do texto
     Animated.loop(
       Animated.sequence([
         Animated.timing(textGlow, {
-          toValue: 1.15,
-          duration: 900,
+          toValue: 1.05,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(textGlow, {
           toValue: 1,
-          duration: 900,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
-        })
+        }),
       ])
     ).start();
 
-    // 4️⃣ Navegar para Home após 2s
+    // Typewriter extremamente suave
+    let index = 0;
+    const interval = setInterval(() => {
+      setDisplayedText(fullText.slice(0, index));
+      index++;
+
+      if (index > fullText.length) {
+        clearInterval(interval);
+      }
+    }, 60);
+
+    // Redirecionamento
     const timeout = setTimeout(() => {
       router.replace("./index");
-    }, 2000);
+    }, 3800);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   return (
     <View style={styles.container}>
       {/* LOGO */}
       <Animated.Image
-        source={require("../assets/images/logo.png")}
+        source={require("../assets/images/LogoPrincipal.png")}
         style={[
           styles.logo,
           {
@@ -85,17 +90,20 @@ export default function SplashScreen() {
         resizeMode="contain"
       />
 
-      {/* TEXTO */}
+
+
+      {/* TEXTO TYPEWRITER */}
       <Animated.Text
         style={[
           styles.text,
           {
-            opacity: textOpacity,
-            transform: [{ translateY: slideUp }, { scale: textGlow }],
+            transform: [{ scale: textGlow }],
+            textAlign: "center",
+            marginTop: 12,
           },
         ]}
       >
-        Mivick, segurança é essencial.
+        {displayedText}
       </Animated.Text>
     </View>
   );

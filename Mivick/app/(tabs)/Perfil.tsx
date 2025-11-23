@@ -9,6 +9,8 @@ import { PerfilFoto } from '@/components/PerfilFoto/perfilFoto';
 import { FirstButton } from '@/components/FirstButton';
 import FontProvider from '@/components/providers/FontProvider';
 import { LinearGradient } from 'expo-linear-gradient';
+import Toast from "react-native-toast-message";
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -60,7 +62,10 @@ export default function Perfil() {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert('Erro', 'Token não encontrado.');
+        Toast.show({
+          type: 'error',
+          text1: 'Token não encontrado.'
+        })
         return;
       }
 
@@ -84,10 +89,16 @@ export default function Perfil() {
 
         setGoogleUser(!u.senha);
       } else {
-        Alert.alert('Erro', data.error || data.__raw || 'Falha ao carregar perfil');
+        Toast.show({
+          type: 'error',
+          text1: data.error|| data.__raw || 'Falha ao carregar perfil.'
+        });
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha de conexão');
+      Toast.show({
+        type: 'error',
+        text1: 'Falha de conexão com o servidor.'
+      })
     } finally {
       setLoading(false);
     }
@@ -152,12 +163,23 @@ export default function Perfil() {
         // Desativa o modo edição após salvar
         setEditing(false);
 
-        Alert.alert('Sucesso', 'Perfil atualizado.');
+        Toast.show({
+          type: 'success',
+          text1: 'Perfil atualizado com sucesso!'
+        })
+
       } else {
-        Alert.alert('Erro', data.error || data.__raw || 'Falha ao atualizar');
+        Toast.show({
+          type: 'error',
+          text1: data.error || data.__raw || 'Falha ao tentar atualizar perfil.'
+        });
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha de conexão com o servidor');
+      Toast.show({
+        type: 'error',
+        text1: 'Falha de conexão com o servidor.'
+      })
+      
     } finally {
       setSaving(false);
     }

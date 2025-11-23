@@ -21,6 +21,10 @@ import { FirstButton } from '@/components/FirstButton';
 import { FirstTextField } from '@/components/FirstTextField';
 import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
+import Toast from "react-native-toast-message";
+import { BackButton } from '@/components/BackButton/BackButton';
+
+
 
 // Stylesheet da página
 import { styles } from '../components/styles/styleCadastro';
@@ -67,13 +71,19 @@ export default function Cadastro() {
 
     // Validação simples
     if (!nome || !telefone || !email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos!");
+      Toast.show({
+        type: 'error',
+        text1: 'Por favor, preencha todos os campos!'
+      })
       return;
     }
 
     // Confirmação de senha
     if (senha !== confirmarSenha) {
-      Alert.alert("Erro", "As senhas não coincidem!");
+      Toast.show({
+        type: 'error',
+        text1: 'As senhas não coincidem!'
+      })
       return;
     }
 
@@ -89,16 +99,29 @@ export default function Cadastro() {
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+        Toast.show({
+          type: 'success',
+          text1: 'Cadastro realizado com sucesso!'
+        })
         router.push("./Login"); // Redireciona para Login
       } else {
-        Alert.alert("Erro", data.error || "Falha ao cadastrar");
+        Toast.show({
+          type: "error",
+          text1: "Erro ao cadastrar",
+          text2: data.error || "Falha ao cadastrar",
+        });
       }
 
     } catch (error) {
       console.error("Erro ao cadastrar:", error);
-      Alert.alert("Erro", "Falha de conexão com o servidor");
+
+      Toast.show({
+        type: "error",
+        text1: "Erro de conexão",
+        text2: "Falha de conexão com o servidor",
+      });
     }
+
   }
 
 
@@ -158,11 +181,14 @@ export default function Cadastro() {
     <SafeAreaView style={styles.container}>
       {/* Header fixo do app */}
       <Header />
+      <BackButton />
+
+
 
       <View style={styles.content}>
 
         {/* Título da página */}
-        <FirstTitle text="Cadastro" fontSize={35} />
+        <FirstTitle text="Cadastre-se" fontSize={35} style={{ alignItems: 'center', alignSelf: 'center' }} />
 
         {/* Campos do formulário */}
         <FirstTextField placeholder="Nome" value={nome} onChangeText={setNome} style={styles.textField} />
