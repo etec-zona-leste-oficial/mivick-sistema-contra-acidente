@@ -47,7 +47,7 @@
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://192.168.1.10:3000/app/mivick/iot/registrar-dispositivo",
+        "http://192.168.1.14:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -106,7 +106,7 @@
         return;
       }
 
-      const response = await fetch("http://192.168.1.10:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://192.168.1.14:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,6 +135,7 @@
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
+    const [ultimaLeitura, setUltimaLeitura] = useState<any>(null);
 
     // SSID modal
     const [ssidModalVisible, setSsidModalVisible] = useState(false);
@@ -328,7 +329,7 @@ async function connectToEsp2(dev: Device) {
         const socket = new WebSocket(url);
 
         socket.onopen = () => {
-          //addLog("🌐 WebSocket conectado!");
+          addLog("🌐 WebSocket conectado!");
           if (deviceId === null) return;
           enviarParaBackend({
             id_dispositivo: deviceId,
@@ -342,17 +343,28 @@ async function connectToEsp2(dev: Device) {
   const msg = event.data;
 
   // ========= FOTO =========
-  if (msg.startsWith("/9j/")) {
-    setImages(prev => ["data:image/jpeg;base64," + msg, ...prev]);
+if (msg.startsWith("/9j/")) {
+  const payload: Partial<BackendPayload> = {
+    id_dispositivo: deviceId,
+    foto_base64: msg,
+    ws_log: "FOTO_RECEBIDA"
+  };
 
-    enviarParaBackend({
-      id_dispositivo: deviceId,
-      foto_base64: msg,
-      ws_log: "FOTO_RECEBIDA"
-    });
-
-    return;
+  // se temos ultimaLeitura, anexa seus campos, senão marca como FOTO
+  if (ultimaLeitura) {
+    payload.distancia = ultimaLeitura.distancia;
+    payload.impacto = ultimaLeitura.impacto;
+    payload.movimentacao = ultimaLeitura.movimentacao;
+  } else {
+    payload.movimentacao = "FOTO";
   }
+
+  enviarParaBackend(payload);
+  setImages(prev => ["data:image/jpeg;base64," + msg, ...prev]);
+  return;
+}
+
+
 
   // ========= STRINGS DO ESP =========
   if (msg.includes("|")) {
@@ -378,13 +390,23 @@ async function connectToEsp2(dev: Device) {
     // Ex: CICLISTA|ULTRASSONICO|OBJETO_PROXIMO|95.80
     // ---------------------------------
     if (parts[1] === "ULTRASSONICO") {
-      enviarParaBackend({
-        id_dispositivo: deviceId,
-        distancia: Number(parts[3]),
-        ws_log: msg
-      });
-      return;
-    }
+  const leitura = {
+    distancia: Number(parts[3]),
+    impacto: 0,
+    movimentacao: "ULTRASSONICO"
+  };
+
+  setUltimaLeitura(leitura);
+
+  enviarParaBackend({
+    id_dispositivo: deviceId,
+    ...leitura,
+    ws_log: msg
+  });
+
+  return;
+}
+
 
     // ---------------------------------
     // 🌀 MPU / SW420
@@ -451,7 +473,7 @@ async function connectToEsp2(dev: Device) {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const resp = await fetch(`http://192.168.1.10:3000/app/mivick/iot/wifi/${deviceId}`, {
+      const resp = await fetch(`http://192.168.1.14:3000/app/mivick/iot/wifi/${deviceId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
 
