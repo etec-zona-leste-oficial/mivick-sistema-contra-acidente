@@ -261,11 +261,8 @@ void loop(){
       Serial.println(String("WiFi conectado: ") + WiFi.localIP().toString());
       // notify via BLE the IP (keep previous behavior)
       if (pCharacteristic) {
-        String ok = "WIFI_OK|" + WiFi.localIP().toString();
-        // send as bytes
-        const char* buf = ok.c_str();
-        pCharacteristic->setValue((uint8_t*)buf, ok.length());
-        pCharacteristic->notify();
+       String ok = "OK|" + WiFi.localIP().toString();
+sendBLE(ok);
       }
 
       // set flags; actual WebServer startup is ensured at top of loop

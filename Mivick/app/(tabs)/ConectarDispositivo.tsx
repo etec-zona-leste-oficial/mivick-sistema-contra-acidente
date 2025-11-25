@@ -47,7 +47,7 @@
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://192.168.1.14:3000/app/mivick/iot/registrar-dispositivo",
+        "http://10.116.216.162:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -106,7 +106,7 @@
         return;
       }
 
-      const response = await fetch("http://192.168.1.14:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://10.116.216.162:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -256,8 +256,9 @@ async function connectToEsp1(dev: Device) {
           ble_log: "ESP1: " + msg
         });
 
-        if (msg.startsWith("WIFI_OK|")) {
+        if (msg.startsWith("OK|")) {
           const ip = msg.split("|")[1];
+          console.log("WIFI_OK recebido:", msg);
           conectarWebSocket(ip); // WS apenas do ESP1
         }
        if (esp2Device && inputSsid && inputPass) {
@@ -473,7 +474,7 @@ if (msg.startsWith("/9j/")) {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const resp = await fetch(`http://192.168.1.14:3000/app/mivick/iot/wifi/${deviceId}`, {
+      const resp = await fetch(`http://10.116.216.162:3000/app/mivick/iot/wifi/${deviceId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
 

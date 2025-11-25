@@ -6,16 +6,17 @@ import React from 'react';
 import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
+
 async function tocarSomAlerta() {
   const { sound } = await Audio.Sound.createAsync(
-    require("../assets/alerta.mp3")
+     require("../../assets/alerta.mp3")
+    //D:\3 ano\mivick-sistema-contra-acidente\Mivick\assets\alerta.mp3
   );
   await sound.playAsync();
 }
-
 async function buscarUltimoAlerta(id_dispositivo: number, token: string) {
   const resp = await fetch(
-    `http://192.168.1.14:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
+    `http://10.116.216.162:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
     {
       headers: { Authorization: `Bearer ${token}` }
     }

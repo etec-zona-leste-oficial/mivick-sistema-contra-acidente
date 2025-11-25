@@ -54,7 +54,7 @@ export default function Cadastro() {
   const [auth, setAuth] = useState<User | null>(null);
 
   // URL do backend
-  const API_URL = "http://192.168.15.66:3000"; // Backend
+  const API_URL = "http://10.116.216.162:3000"; // Backend
 
   // Campos do formulário
   const [nome, setNome] = useState("");

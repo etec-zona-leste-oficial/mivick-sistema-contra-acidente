@@ -15,7 +15,7 @@ import { styles } from '@/components/styles/stylePerfil'
 
 const { width, height } = Dimensions.get('window');
 
-const BASE_URL = 'http://192.168.15.66:3000';
+const BASE_URL = 'http://10.116.216.162:3000';
 const API_URL = `${BASE_URL}/app/mivick/user`;
 
 type UserData = {
