@@ -3,17 +3,17 @@ import FontProvider from '@/components/providers/FontProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Audio } from "expo-av";
+// import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 
-async function tocarSomAlerta() {
-  const { sound } = await Audio.Sound.createAsync(
-     require("../../assets/alerta.mp3")
-    //D:\3 ano\mivick-sistema-contra-acidente\Mivick\assets\alerta.mp3
-  );
-  await sound.playAsync();
-}
+//async function tocarSomAlerta() {
+ // const { sound } = await Audio.Sound.createAsync(
+ //    require("../../assets/alerta.mp3")
+  //  //D:\3 ano\mivick-sistema-contra-acidente\Mivick\assets\alerta.mp3
+ // );
+ // await sound.playAsync();
+//}
 async function buscarUltimoAlerta(id_dispositivo: number, token: string) {
   const resp = await fetch(
     `http://10.116.216.162:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
@@ -56,7 +56,7 @@ export default function TabsLayout() {
         const diff = Math.abs((agora.getTime() - alerta.getTime()) / 1000);
 
         if (diff <= 15) {
-          tocarSomAlerta();
+          //tocarSomAlerta();
         }
       }, 5000); // verifica a cada 5s
     }

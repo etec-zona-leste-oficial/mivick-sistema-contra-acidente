@@ -311,22 +311,35 @@ function LinhaInfo({
   value: string;
 }) {
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: height * 0.012,
-    }}>
-      <FirstTitle text={label} fontSize={Math.min(width * 0.05, 20)} />
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "flex-start",
+        marginBottom: height * 0.012,
+      }}
+    >
+      <FirstTitle
+        text={label}
+        fontSize={Math.min(width * 0.05, 20)}
+        style={{
+          width: width * 0.28,   // garante alinhamento
+          flexShrink: 0,
+        }}
+      />
+
       <FirstSubTitle
         text={value}
         style={{
           fontSize: Math.min(width * 0.04, 16),
           color: "#D9D9D9",
+          flexShrink: 1,        // permite quebrar
+          flexWrap: "wrap",     // quebra o texto
         }}
       />
     </View>
   );
 }
+
 
 /* -------------------------------------------
    FORMATADOR DE DATA

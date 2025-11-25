@@ -23,11 +23,12 @@ import { FirstTitle } from '@/components/FirstTitle';
 import { Header } from '@/components/Header';
 import Toast from "react-native-toast-message";
 import { BackButton } from '@/components/BackButton/BackButton';
-
+import { FirstModal } from '@/components/FirstModal';
 
 
 // Stylesheet da página
 import { styles } from '../components/styles/styleCadastro';
+import { FirstModalTerms } from '@/components/FirstModalTerms/FirstModal';
 
 
 // -----------------------------------------------------------
@@ -54,7 +55,7 @@ export default function Cadastro() {
   const [auth, setAuth] = useState<User | null>(null);
 
   // URL do backend
-  const API_URL = "http://10.116.216.162:3000"; // Backend
+  const API_URL = "http://192.168.15.66:3000"; // Backend
 
   // Campos do formulário
   const [nome, setNome] = useState("");
@@ -62,6 +63,9 @@ export default function Cadastro() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+
+  // Modal de Termos de Uso
+  const [modalVisible, setModalVisible] = useState(false);
 
 
   // -----------------------------------------------------------
@@ -237,9 +241,30 @@ export default function Cadastro() {
 
           <Text style={styles.checkboxText}>
             Ao clicar, você concorda com os{" "}
-            <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
+            <Text style={styles.termsText} onPress={() => setModalVisible(true)}>termos de uso</Text> do aplicativo.
           </Text>
         </View>
+
+           {/*Modal de Termos de Uso */}
+                  <FirstModalTerms
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                  >
+                    {`
+                      Bem-vindo ao Mivick! Ao utilizar nosso aplicativo, você concorda com os seguintes termos de uso:
+
+                      Utilização de informações pessoais para fins de pesquisa e funcionalidades do app.
+
+                      Envio de mensagens a contatos salvos no seu dispositivo.
+
+                      Armazenamento local de dados para melhorar a experiência do usuário.
+
+                      Não nos responsabilizamos por qualquer dano ou perda de dados causados por mau uso do aplicativo.
+
+                      Reservamo-nos o direito de modificar estes termos a qualquer momento.
+                      Recomendamos que você os revise periodicamente.
+                    `}
+                  </FirstModalTerms>    
 
       </View>
     </SafeAreaView>

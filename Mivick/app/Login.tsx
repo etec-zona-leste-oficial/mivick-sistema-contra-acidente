@@ -46,7 +46,7 @@ export default function Login() {
   const [auth, setAuth] = useState<User | null>(null);
 
   // URL base da API
-  const API_URL = "http://10.116.216.162:3000";
+  const API_URL = "http://192.168.15.66:3000";
 
   // Estados controlando os inputs do formulário
   const [email, setEmail] = useState("");
@@ -231,8 +231,11 @@ export default function Login() {
           icon={<FontAwesome name="google" size={24} color="#fff" />}
         />
 
+       
         {/* Área do checkbox dos termos */}
         <View style={styles.checkboxContainer}>
+
+          
           <TouchableOpacity
             style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}
             onPress={() => setAgreeToTerms(!agreeToTerms)}
@@ -242,13 +245,19 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Text style={styles.checkboxText}>
-              Ao clicar, você concorda com os{" "}
-              <Text style={styles.termsText}>termos de uso</Text> do aplicativo.
-            </Text>
-          </TouchableOpacity>
+          {/* Texto normal + link separado */}
+          <Text style={styles.checkboxText}>
+            Ao clicar, você concorda com os{" "}
+            <Text
+              style={styles.termsText}
+              onPress={() => setModalVisible(true)}   
+            >
+              termos de uso
+            </Text>{" "}
+            do aplicativo.
+          </Text>
         </View>
+
 
 
         {/*Modal de Termos de Uso */}
