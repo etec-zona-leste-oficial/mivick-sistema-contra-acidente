@@ -1,25 +1,47 @@
-
+// =============================================================
+// Imports dos componentes reutilizáveis da aplicação
+// =============================================================
 import { FirstButton } from "@/components/FirstButton";
 import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-import { useBle } from '@/components/providers/BleProvider'; // ⬅️ importa o contexto BLE
+
+// Contexto BLE criado no app, permitindo acessar dispositivos, conexão etc.
+import { useBle } from '@/components/providers/BleProvider'; 
+
+// Biblioteca de ícones
 import { FontAwesome } from "@expo/vector-icons";
+
+// Usado para converter strings em base64 antes de enviar via BLE
 import { Buffer } from "buffer";
+
+// Navegação do Expo Router
 import { useRouter } from "expo-router";
+
 import React from "react";
 import { Alert, Dimensions, Pressable, ScrollView, View, TouchableOpacity } from "react-native";
+
+// UUIDs do serviço BLE e característica utilizada para envio de comandos
 const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
 const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
 
+// Dimensões da tela
 const { width, height } = Dimensions.get("window");
 
+// =============================================================
+// Tela principal de configuração do dispositivo
+// =============================================================
 export default function ConfigurarDispositivo() {
+
   const router = useRouter();
+
+  // Manager BLE + lista de dispositivos + estado de conexão
   const { manager, devices, connected, setConnected } = useBle();
 
-
+  // -------------------------------------------------------------
+  // Função para enviar comandos para todos os dispositivos conectados
+  // -------------------------------------------------------------
   async function enviarComando(cmd: string) {
     if (!connected) {
       Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
@@ -27,8 +49,10 @@ export default function ConfigurarDispositivo() {
     }
 
     try {
+      // Pega a lista de dispositivos conectados
       const arr = Object.values(devices);
 
+      // Envia o comando codificado em base64 para cada dispositivo
       for (const dev of arr) {
         await dev.writeCharacteristicWithResponseForService(
           SERVICE_UUID,
@@ -43,6 +67,10 @@ export default function ConfigurarDispositivo() {
       Alert.alert("Erro", "Falha ao enviar comando.");
     }
   }
+
+  // -------------------------------------------------------------
+  // Função para desconectar todos os dispositivos BLE
+  // -------------------------------------------------------------
   async function desconectarTodos() {
     if (!connected) {
       Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
@@ -56,7 +84,8 @@ export default function ConfigurarDispositivo() {
         await dev.cancelConnection();
       }
 
-      setConnected(false); // atualiza estado global
+      // Atualiza estado global de conexão
+      setConnected(false);
 
       Alert.alert("Desconectado", "Todos os dispositivos foram desconectados.");
     } catch (e) {
@@ -67,6 +96,9 @@ export default function ConfigurarDispositivo() {
 
   console.log("Devices conectados:", devices);
 
+  // =============================================================
+  // Interface da tela
+  // =============================================================
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <ScrollView
@@ -74,10 +106,11 @@ export default function ConfigurarDispositivo() {
         contentContainerStyle={{ paddingBottom: height * 0.1 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* --- Header --- */}
+
+        {/* Header com login */}
         <HeaderComLogin />
 
-        {/* --- Título --- */}
+        {/* Título da página */}
         <FirstTitle
           text={"Configurações do \ndispositivo"}
           fontSize={Math.min(width * 0.08, 32)}
@@ -88,7 +121,7 @@ export default function ConfigurarDispositivo() {
           }}
         />
 
-        {/* --- Linha --- */}
+        {/* Linha de divisão */}
         <View
           style={{
             height: 1,
@@ -100,7 +133,7 @@ export default function ConfigurarDispositivo() {
           }}
         />
 
-        {/* --- Status do dispositivo --- */}
+        {/* Card com status do dispositivo */}
         <FirstCard
           customStyle={{
             width: "100%",
@@ -113,10 +146,10 @@ export default function ConfigurarDispositivo() {
             marginTop: height * 0.025,
             marginBottom: height * 0.02,
             justifyContent: "center",
-
           }}
         >
-          {/* Título do Card */}
+
+          {/* Cabeçalho do card */}
           <View
             style={{
               flexDirection: "row",
@@ -156,7 +189,7 @@ export default function ConfigurarDispositivo() {
             />
           </View>
 
-          {/* Dispositivo */}
+          {/* Status do dispositivo */}
           <View
             style={{
               flexDirection: "row",
@@ -191,22 +224,27 @@ export default function ConfigurarDispositivo() {
                 color: "#D9D9D9",
               }}
             />
-
           </View>
+
+          {/* Botões de ação só aparecem quando há conexão BLE */}
           {connected && (
             <View style={{ alignItems: "center", marginTop: 20 }}>
+
+              {/* Ligar sensores */}
               <FirstButton
                 title="Ligar Sensores"
                 onPress={() => enviarComando("ON")}
                 customStyle={{ marginVertical: 10, width: "85%" }}
               />
 
+              {/* Desligar sensores */}
               <FirstButton
                 title="Desligar Sensores"
                 onPress={() => enviarComando("OFF")}
                 customStyle={{ marginVertical: 10, width: "85%" }}
               />
 
+              {/* Desconectar BLE */}
               <FirstButton
                 title="Desconectar"
                 onPress={desconectarTodos}
@@ -215,10 +253,9 @@ export default function ConfigurarDispositivo() {
             </View>
           )}
 
-
         </FirstCard>
 
-        {/* --- Linha --- */}
+        {/* Linha divisória */}
         <View
           style={{
             height: 1,
@@ -229,7 +266,8 @@ export default function ConfigurarDispositivo() {
             marginBottom: height * 0.05,
           }}
         />
-        {/* --- BOTÕES --- */}
+
+        {/* Botões principais de ações rápidas */}
         <View
           style={{
             width: "100%",
@@ -240,7 +278,7 @@ export default function ConfigurarDispositivo() {
           }}
         >
 
-          {/* --- Botão: Desligar Dispositivo --- */}
+          {/* Botão desligar dispositivo */}
           <TouchableOpacity
             onPress={() => enviarComando("POWEROFF")}
             style={{ alignItems: "center" }}
@@ -274,7 +312,7 @@ export default function ConfigurarDispositivo() {
             />
           </TouchableOpacity>
 
-          {/* --- Botão: Desligar Sensores --- */}
+          {/* Botão desligar sensores */}
           <TouchableOpacity
             onPress={() => enviarComando("OFF")}
             style={{ alignItems: "center" }}
@@ -308,7 +346,7 @@ export default function ConfigurarDispositivo() {
             />
           </TouchableOpacity>
 
-          {/* --- Botão: Conectar WiFi --- */}
+          {/* Botão conectar WiFi */}
           <TouchableOpacity
             onPress={() => enviarComando("WIFI")}
             style={{ alignItems: "center" }}
@@ -344,13 +382,7 @@ export default function ConfigurarDispositivo() {
 
         </View>
 
-
-
-
-
-
-
-        {/* --- Linha --- */}
+        {/* Linha divisória */}
         <View
           style={{
             height: 1,
@@ -362,14 +394,14 @@ export default function ConfigurarDispositivo() {
           }}
         />
 
-        {/* --- Histórico --- */}
+        {/* Título da seção de histórico */}
         <FirstTitle
           text="Histórico:"
           fontSize={Math.min(width * 0.085, 34)}
           style={{ paddingHorizontal: width * 0.05 }}
         />
 
-        {/* --- Card 1 --- */}
+        {/* Card de histórico — alerta de distância */}
         <Pressable onPress={() => router.push("/HistoricoAlerta")}>
           <FirstCard
             customStyle={{
@@ -385,7 +417,8 @@ export default function ConfigurarDispositivo() {
                 gap: width * 0.04,
               }}
             >
-              {/* Ícone */}
+
+              {/* Ícone do card */}
               <View
                 style={{
                   width: width * 0.16,
@@ -405,7 +438,7 @@ export default function ConfigurarDispositivo() {
                 />
               </View>
 
-              {/* Texto */}
+              {/* Textos do card */}
               <View style={{ flex: 1 }}>
                 <View
                   style={{
@@ -441,7 +474,7 @@ export default function ConfigurarDispositivo() {
           </FirstCard>
         </Pressable>
 
-        {/* --- Card 2 --- */}
+        {/* Card de histórico — possível acidente */}
         <Pressable onPress={() => router.push("/HistoricoAlerta")}>
           <FirstCard
             customStyle={{
@@ -457,7 +490,8 @@ export default function ConfigurarDispositivo() {
                 gap: width * 0.04,
               }}
             >
-              {/* Ícone */}
+
+              {/* Ícone do card */}
               <View
                 style={{
                   width: width * 0.16,
@@ -477,7 +511,7 @@ export default function ConfigurarDispositivo() {
                 />
               </View>
 
-              {/* Texto */}
+              {/* Textos */}
               <View style={{ flex: 1 }}>
                 <View
                   style={{
@@ -512,6 +546,7 @@ export default function ConfigurarDispositivo() {
             </View>
           </FirstCard>
         </Pressable>
+
       </ScrollView>
     </View>
   );
