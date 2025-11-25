@@ -218,6 +218,21 @@ console.log("Devices conectados:", devices);
 
         </FirstCard>
 
+         {/* --- Linha --- */}
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "90%",
+            alignSelf: "center",
+            marginVertical: height * 0.00,
+            marginBottom: height * 0.06,
+          }}
+        />
+          
+          {/* --- BOTÕES --- */}
+        
+
         {/* --- Linha --- */}
         <View
           style={{

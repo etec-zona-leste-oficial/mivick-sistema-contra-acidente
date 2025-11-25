@@ -13,6 +13,7 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
+import { BackButton } from "@/components/BackButton/BackButton";
 
 const { width, height } = Dimensions.get("window");
 
@@ -61,6 +62,7 @@ export default function HistoricoAlerta() {
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <HeaderComLogin />
+        <BackButton />
 
         <FirstTitle
           text="Histórico"
