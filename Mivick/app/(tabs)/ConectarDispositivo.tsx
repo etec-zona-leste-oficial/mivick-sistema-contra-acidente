@@ -4,7 +4,6 @@
   import { FirstModal } from "@/components/FirstModal";
   import { FirstTitle } from "@/components/FirstTitle";
   import { HeaderComLogin } from "@/components/HeaderComLogin";
-  import { useRouter } from "expo-router";
   import AsyncStorage from "@react-native-async-storage/async-storage";
   import { useBle } from '@/components/providers/BleProvider';
   import { Buffer } from "buffer";
@@ -27,7 +26,6 @@
 
   global.Buffer = global.Buffer || Buffer;
   const { height } = Dimensions.get("window");
-const router = useRouter();
 
   // CONFIG
   const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
@@ -49,7 +47,7 @@ const router = useRouter();
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://10.135.37.162:3000/app/mivick/iot/registrar-dispositivo",
+        "http://10.135.37.203:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -108,7 +106,7 @@ const router = useRouter();
         return;
       }
 
-      const response = await fetch("http://10.135.37.162:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://10.135.37.203:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +143,6 @@ const router = useRouter();
     const [inputPass, setInputPass] = useState("");
     const [deviceId, setDeviceId] = useState<number | null>(null);
     const [wifiSalvo, setWifiSalvo] = useState<{ ssid: string, senha: string }[]>([]);
-  const [ip, setIp] = useState<string>("");
 
     function addLog(msg: string) {
       console.log(msg);
@@ -236,10 +233,9 @@ async function connectToEsp1(dev: Device) {
         });
 
         if (msg.startsWith("OK|")) {
-        const parts = msg.split("|");
-        const newIp = parts[1];
-        setIp(newIp);
-            AsyncStorage.setItem("device_ip", newIp);
+          const ip = msg.split("|")[1];
+          console.log("WIFI_OK recebido:", msg);
+          conectarWebSocket(ip); // WS apenas do ESP1
         }
        if (esp2Device && inputSsid && inputPass) {
   esp2Device.writeCharacteristicWithoutResponseForService(
@@ -300,7 +296,67 @@ async function connectToEsp2(dev: Device) {
     console.log("Erro ESP2:", e);
   }
 }
+ // =============================================================
+  // ENVIAR WIFI VIA BLE
+  // =============================================================
+  async function enviarWifi(ssid: string, senha: string) {
+    const target = esp1Device;
+    if (!target) return;
 
+    try {
+      const msg = `WIFI|${ssid}|${senha}`;
+
+      await target.writeCharacteristicWithResponseForService(
+        SERVICE_UUID,
+        CHARACTERISTIC_UUID,
+        Buffer.from(msg, "utf-8").toString("base64")
+      );
+
+      addLog("Wi-Fi enviado ao ESP");
+
+      if (deviceId) {
+        enviarParaBackend({
+          id_dispositivo: deviceId,
+          wifi_ssid: ssid,
+          wifi_senha: senha,
+        });
+      }
+    } catch (e) {
+      console.error("Erro ao enviar Wi-Fi:", e);
+      Alert.alert("Erro", "Falha ao enviar credenciais.");
+    }
+  }
+
+  async function abrirModalWifi() {
+    if (!deviceId) return;
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const resp = await fetch(
+        `http://10.135.37.203:3000/app/mivick/iot/wifi/${deviceId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const json = await resp.json();
+
+      if (json.ok) setWifiSalvo(json.lista);
+    } catch (e) {
+      console.log("Erro ao buscar wifi:", e);
+    }
+
+    setSsidModalVisible(true);
+  }
+
+  function onSendWifiFromModal() {
+    if (!inputSsid || !inputPass) {
+      Alert.alert("Preencha", "Informe SSID e senha.");
+      return;
+    }
+
+    setSsidModalVisible(false);
+    enviarWifi(inputSsid.trim(), inputPass.trim());
+  }
     // ---------------------- WEBSOCKET ----------------------
     function conectarWebSocket(ip: string) {
       const url = `ws://${ip}/ws`;
@@ -474,18 +530,10 @@ if (msg.startsWith("/9j/")) {
 
           <FirstButton
             title={connected ? "Conectado" : "Parear"}
-            onPress={() => {
-              if (connected) {
-                AsyncStorage.setItem("device_ip", ip);
-                router.push("./Configurações");
-              } else {
-            openModal();
-            }
-            }}
-          customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
+            onPress={openModal}
+            customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
           />
-
-            
+          
   
 
         
@@ -500,7 +548,69 @@ if (msg.startsWith("/9j/")) {
             ))}
           </View>
         </FirstModal>
+    {/* Modal Wi-Fi */}
+<Modal visible={ssidModalVisible} transparent animationType="slide">
+  <View style={styles.modalBackdrop}>
+    <View style={styles.modalBox}>
 
+      <Text style={{ color: "#fff", fontSize: 18, marginBottom: 12 }}>
+        Conectar ao Wi-Fi
+      </Text>
+
+      {wifiSalvo.length > 0 && (
+        <>
+          <Text style={{ color: "#aaa", marginBottom: 6 }}>Redes salvas:</Text>
+
+          {wifiSalvo.map((item, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => {
+                setInputSsid(item.ssid);
+                setInputPass(item.senha);
+              }}
+              style={{
+                padding: 10,
+                backgroundColor: "#222",
+                borderRadius: 6,
+                marginBottom: 6
+              }}
+            >
+              <Text style={{ color: "#fff" }}>{item.ssid}</Text>
+            </TouchableOpacity>
+          ))}
+
+          <View style={{ height: 1, backgroundColor: "#333", marginVertical: 10 }} />
+        </>
+      )}
+
+      <TextInput
+        placeholder="SSID"
+        placeholderTextColor="#999"
+        value={inputSsid}
+        onChangeText={setInputSsid}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Senha"
+        placeholderTextColor="#999"
+        value={inputPass}
+        onChangeText={setInputPass}
+        secureTextEntry
+        style={styles.input}
+      />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
+        <TouchableOpacity onPress={() => setSsidModalVisible(false)} style={styles.buttonSecondary}>
+          <Text style={{ color: "#fff" }}>Cancelar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={onSendWifiFromModal} style={styles.buttonPrimary}>
+          <Text style={{ color: "#fff" }}>Enviar</Text>
+        </TouchableOpacity>
+  </View>
+    </View>
+  </View>
+</Modal>
 
 </ScrollView>
       </View>
