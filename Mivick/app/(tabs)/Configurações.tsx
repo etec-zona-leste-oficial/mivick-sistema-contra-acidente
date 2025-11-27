@@ -1,571 +1,465 @@
+// =============================================================
+// IMPORTS
+// =============================================================
+import { FirstButton } from "@/components/FirstButton";
+import { FirstCard } from "@/components/FirstCard/FirstCard";
+import { FirstSubTitle } from "@/components/FirstSubTitle";
+import { FirstTitle } from "@/components/FirstTitle";
+import { HeaderComLogin } from "@/components/HeaderComLogin";
+
+import { useBle } from "@/components/providers/BleProvider";
+
+import { FontAwesome } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
+import { Buffer } from "buffer";
+
+import { useRouter } from "expo-router";
+import React, { useState, useEffect } from "react";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  Alert,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  View,
+  TouchableOpacity,
+} from "react-native";
+
+import { Device } from "react-native-ble-plx";
+
+// BLE UUIDs
+const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
+const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
+
+// Dimensões
+const { width, height } = Dimensions.get("window");
+
+// =============================================================
+// COMPONENTE PRINCIPAL
+// =============================================================
+export default function ConectarDispositivo() {
+  const router = useRouter();
+
+  const { manager, devices, addDevice, removeDevice, connected, setConnected } =
+    useBle();
+
+  const [esp1Device, setEsp1Device] = useState<Device | null>(null);
+  const [sensoresLigados, setSensoresLigados] = useState(false);
+
+  const [ssidModalVisible, setSsidModalVisible] = useState(false);
+  const [inputSsid, setInputSsid] = useState("");
+  const [inputPass, setInputPass] = useState("");
+
+  const [deviceId, setDeviceId] = useState<number | null>(null);
+  const [wifiSalvo, setWifiSalvo] = useState<
+    { ssid: string; senha: string }[]
+  >([]);
+
+  const [logs, setLogs] = useState<string[]>([]);
+
+  function addLog(msg: string) {
+    console.log(msg);
+    setLogs((prev) => [...prev, msg]);
+  }
+
+  useEffect(() => {
+    async function loadDeviceId() {
+      const id = await AsyncStorage.getItem("device_id");
+      if (id) setDeviceId(Number(id));
+    }
+    loadDeviceId();
+  }, []);
+
   // =============================================================
-  // Imports dos componentes reutilizáveis da aplicação
+  // ENVIAR COMMANDO GENÉRICO A TODOS OS DISPOSITIVOS
   // =============================================================
-  import { FirstButton } from "@/components/FirstButton";
-  import { FirstCard } from "@/components/FirstCard/FirstCard";
-  import { FirstSubTitle } from "@/components/FirstSubTitle";
-  import { FirstTitle } from "@/components/FirstTitle";
-  import { HeaderComLogin } from "@/components/HeaderComLogin";
+  async function enviarComando(cmd: string) {
+    if (!connected) {
+      Toast.show({
+        type: "info",
+        text1: "Nenhum dispositivo BLE conectado!",
+      });
+      return;
+    }
 
-  // Contexto BLE criado no app, permitindo acessar dispositivos, conexão etc.
-  import { useBle } from '@/components/providers/BleProvider';
+    try {
+      const arr = Object.values(devices);
 
-  // Biblioteca de ícones
-  import { FontAwesome } from "@expo/vector-icons";
-  import Toast from "react-native-toast-message";
+      for (const dev of arr) {
+        await dev.writeCharacteristicWithResponseForService(
+          SERVICE_UUID,
+          CHARACTERISTIC_UUID,
+          Buffer.from(cmd, "utf-8").toString("base64")
+        );
+      }
 
+      Toast.show({ type: "success", text1: "Comando enviado!", text2: cmd });
+    } catch (e) {
+      console.log(e);
+      Toast.show({
+        type: "error",
+        text1: "Erro ao enviar comando",
+      });
+    }
+  }
 
-  // Usado para converter strings em base64 antes de enviar via BLE
-  import { Buffer } from "buffer";
-
-  // Navegação do Expo Router
-  import { useRouter } from "expo-router";
-
-  import React from "react";
-  import { Alert, Dimensions, Pressable, ScrollView, View, TouchableOpacity } from "react-native";
-
-  // UUIDs do serviço BLE e característica utilizada para envio de comandos
-  const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
-  const CHARACTERISTIC_UUID = "abcdefab-1234-1234-1234-abcdefabcdef";
-
-  // Dimensões da tela
-  const { width, height } = Dimensions.get("window");
-
-  // =============================================================
-  // Tela principal de configuração do dispositivo
-  // =============================================================
-  export default function ConfigurarDispositivo() {
-
-    const router = useRouter();
-
-    // Manager BLE + lista de dispositivos + estado de conexão
-    const { manager, devices, connected, setConnected } = useBle();
-    const [sensoresLigados, setSensoresLigados] = React.useState(false);
-    async function toggleSensores() {
+  async function toggleSensores() {
     const cmd = sensoresLigados ? "OFF" : "ON";
+    await enviarComando(cmd);
+    setSensoresLigados(!sensoresLigados);
+  }
 
-  await enviarComando(cmd);
+  // =============================================================
+  // BACKEND
+  // =============================================================
+  async function enviarParaBackend(body: any) {
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-  setSensoresLigados(!sensoresLigados);
-}
-
-    // -------------------------------------------------------------
-    // Função para enviar comandos para todos os dispositivos conectados
-    // -------------------------------------------------------------
-    async function enviarComando(cmd: string) {
-      if (!connected) {
-        Toast.show({
-          type: 'info',
-          text1: 'Nenhum dispositivo BLE conectado!'
-        })
+      if (!body.id_dispositivo) {
+        console.warn("Tentou enviar sem ID");
         return;
       }
 
-      try {
-        // Pega a lista de dispositivos conectados
-        const arr = Object.values(devices);
-
-        // Envia o comando codificado em base64 para cada dispositivo
-        for (const dev of arr) {
-          await dev.writeCharacteristicWithResponseForService(
-            SERVICE_UUID,
-            CHARACTERISTIC_UUID,
-            Buffer.from(cmd, "utf-8").toString("base64")
-          );
+      const response = await fetch(
+        "http://10.135.37.162:3000/app/mivick/iot/leituras",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
         }
+      );
 
-        Toast.show({
-          type: 'success',
-          text1: 'Comando enviado a todos',
-          text2: cmd
-        });
+      console.log("Backend:", await response.json());
+    } catch (error) {
+      console.log("Erro ao enviar:", error);
+    }
+  }
 
-      } catch (e) {
-        console.log(e);
-        Toast.show({
-          type: 'error',
-          text1: 'Erro',
-          text2: 'Falha ao enviar comando.'
+  // =============================================================
+  // ENVIAR WIFI VIA BLE
+  // =============================================================
+  async function enviarWifi(ssid: string, senha: string) {
+    const target = esp1Device;
+    if (!target) return;
+
+    try {
+      const msg = `WIFI|${ssid}|${senha}`;
+
+      await target.writeCharacteristicWithResponseForService(
+        SERVICE_UUID,
+        CHARACTERISTIC_UUID,
+        Buffer.from(msg, "utf-8").toString("base64")
+      );
+
+      addLog("Wi-Fi enviado ao ESP");
+
+      if (deviceId) {
+        enviarParaBackend({
+          id_dispositivo: deviceId,
+          wifi_ssid: ssid,
+          wifi_senha: senha,
         });
       }
+    } catch (e) {
+      console.error("Erro ao enviar Wi-Fi:", e);
+      Alert.alert("Erro", "Falha ao enviar credenciais.");
+    }
+  }
+
+  async function abrirModalWifi() {
+    if (!deviceId) return;
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const resp = await fetch(
+        `http://10.135.37.162:3000/app/mivick/iot/wifi/${deviceId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const json = await resp.json();
+
+      if (json.ok) setWifiSalvo(json.lista);
+    } catch (e) {
+      console.log("Erro ao buscar wifi:", e);
     }
 
-    // -------------------------------------------------------------
-    // Função para desconectar todos os dispositivos BLE
-    // -------------------------------------------------------------
-    async function desconectarTodos() {
-      if (!connected) {
-        Toast.show({
-          type: 'info',
-          text1: 'Nenhum dispositivo BLE conectado.'
-        });
-        return;
-      }
+    setSsidModalVisible(true);
+  }
 
-      try {
-        const arr = Object.values(devices);
-
-        for (const dev of arr) {
-          await dev.cancelConnection();
-        }
-
-        // Atualiza estado global de conexão
-        setConnected(false);
-
-        Toast.show({
-          type: 'success',
-          text1: 'Todos os dispositivos foram desconectados.'
-        });
-
-      } catch (e) {
-        console.log(e);
-        Toast.show({
-          type: 'error',
-          text1: 'Erro',
-          text2: 'Falha ao desconectar.'
-        });
-      }
+  function onSendWifiFromModal() {
+    if (!inputSsid || !inputPass) {
+      Alert.alert("Preencha", "Informe SSID e senha.");
+      return;
     }
 
-    console.log("Devices conectados:", devices);
+    setSsidModalVisible(false);
+    enviarWifi(inputSsid.trim(), inputPass.trim());
+  }
 
-    // =============================================================
-    // Interface da tela
-    // =============================================================
-    return (
-      <View style={{ flex: 1, backgroundColor: "#000" }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: height * 0.1 }}
-          showsVerticalScrollIndicator={false}
-        >
+  // =============================================================
+  // DESCONECTAR TODOS
+  // =============================================================
+  async function desconectarTodos() {
+    if (!connected) {
+      Toast.show({ type: "info", text1: "Nenhum dispositivo conectado." });
+      return;
+    }
 
-          {/* Header com login */}
-          <HeaderComLogin />
+    try {
+      const arr = Object.values(devices);
 
-          {/* Título da página */}
-          <FirstTitle
-            text={"Configurações do \ndispositivo"}
-            fontSize={Math.min(width * 0.08, 32)}
-            style={{
-              marginBottom: height * 0.015,
-              marginTop: height * 0.025,
-              paddingHorizontal: width * 0.06,
-            }}
-          />
+      for (const dev of arr) await dev.cancelConnection();
 
-          {/* Linha de divisão */}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: "#F85200",
-              width: "106%",
-              alignSelf: "center",
-              marginTop: height * 0.015,
-              marginBottom: -height * 0.025,
-            }}
-          />
+      setConnected(false);
 
-          {/* Card com status do dispositivo */}
-          <FirstCard
-            customStyle={{
-              width: "100%",
-              alignSelf: "center",
-              paddingHorizontal: width * 0.06,
-              paddingVertical: height * 0.02,
-              borderRadius: 0,
-              elevation: 0,
-              shadowOpacity: 0,
-              marginTop: height * 0.025,
-              marginBottom: height * 0.02,
-              justifyContent: "center",
-            }}
-          >
+      Toast.show({
+        type: "success",
+        text1: "Todos foram desconectados.",
+      });
+    } catch (e) {
+      console.log(e);
+      Toast.show({
+        type: "error",
+        text1: "Erro ao desconectar",
+      });
+    }
+  }
 
-            {/* Cabeçalho do card */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: height * 0.012,
-              }}
-            >
-              <FontAwesome
-                name="wifi"
-                size={Math.min(width * 0.06, 24)}
-                color="#F85200"
-                style={{ marginRight: width * 0.02 }}
-              />
-              <FirstTitle
-                text="Status do dispositivo:"
-                fontSize={Math.min(width * 0.06, 25)}
-              />
-            </View>
-
-            {/* Nível de bateria */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: height * 0.008,
-                paddingHorizontal: width * 0.05,
-              }}
-            >
-              <FirstTitle text="Nível de bateria: " fontSize={Math.min(width * 0.045, 18)} />
-              <FirstSubTitle
-                text="100%"
-                style={{
-                  fontSize: Math.min(width * 0.04, 16),
-                  color: "#D9D9D9",
-                }}
-              />
-            </View>
-
-            {/* Status do dispositivo */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: height * 0.008,
-                paddingHorizontal: width * 0.05,
-              }}
-            >
-              <FirstTitle text="Dispositivo: " fontSize={Math.min(width * 0.045, 18)} />
-              <FirstSubTitle
-                text="Ligado"
-                style={{
-                  fontSize: Math.min(width * 0.04, 16),
-                  color: "#D9D9D9",
-                }}
-              />
-            </View>
-
-            {/* Sensores */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingHorizontal: width * 0.05,
-              }}
-            >
-              <FirstTitle text="Sensores: " fontSize={Math.min(width * 0.045, 18)} />
-              <FirstSubTitle
-                text="Conectados"
-                style={{
-                  fontSize: Math.min(width * 0.04, 16),
-                  color: "#D9D9D9",
-                }}
-              />
-            </View>
-
-           
-
-          </FirstCard>
-
-          {/* Linha divisória */}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: "#F85200",
-              width: "90%",
-              alignSelf: "center",
-              marginVertical: height * 0.00,
-              marginBottom: height * 0.05,
-            }}
-          />
-
-          {/* Botões principais de ações rápidas */}
-          <View
-            style={{
-              width: "100%",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              alignItems: "center",
-              marginBottom: height * 0.02,
-            }}
-          >
-
-         <View
-  style={{
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    marginBottom: height * 0.02,
-  }}
->
-  {connected && (
-    <>
-      {/* --- BOTÃO 1 — LIGAR / DESLIGAR SENSORES --- */}
-      <TouchableOpacity
-        onPress={toggleSensores}
-        style={{ alignItems: "center" }}
+  // =============================================================
+  // UI
+  // =============================================================
+  return (
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: height * 0.1 }}
+        showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            width: width * 0.22,
-            height: width * 0.22,
-            borderRadius: (width * 0.22) / 2,
-            borderWidth: 3,
-            borderColor: "#F85200",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <FontAwesome
-            name={sensoresLigados ? "power-off" : "play"}
-            size={Math.min(width * 0.12, 40)}
-            color="#F85200"
-          />
-        </View>
+        <HeaderComLogin />
 
-        <FirstSubTitle
-          text={sensoresLigados ? "Desligar Sensores" : "Ligar Sensores"}
+        <FirstTitle
+          text={"Configurações do \ndispositivo"}
+          fontSize={Math.min(width * 0.08, 32)}
           style={{
-            textAlign: "center",
-            marginTop: 5,
-            fontSize: Math.min(width * 0.035, 14),
-            color: "#D9D9D9",
+            marginBottom: height * 0.015,
+            marginTop: height * 0.025,
+            paddingHorizontal: width * 0.06,
           }}
         />
-      </TouchableOpacity>
 
-      {/* --- BOTÃO 2 — DESCONECTAR --- */}
-      <TouchableOpacity onPress={desconectarTodos} style={{ alignItems: "center" }}>
         <View
           style={{
-            width: width * 0.22,
-            height: width * 0.22,
-            borderRadius: (width * 0.22) / 2,
-            borderWidth: 3,
-            borderColor: "#F85200",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <FontAwesome
-            name="rss"
-            size={Math.min(width * 0.12, 40)}
-            color="#F85200"
-          />
-        </View>
-
-        <FirstSubTitle
-          text="Desconectar"
-          style={{
-            textAlign: "center",
-            marginTop: 5,
-            fontSize: Math.min(width * 0.040, 14),
-            color: "#D9D9D9",
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "106%",
+            alignSelf: "center",
+            marginTop: height * 0.015,
+            marginBottom: -height * 0.025,
           }}
         />
-      </TouchableOpacity>
 
-      {/* --- BOTÃO 3 — WIFI (SEM FUNÇÃO POR ENQUANTO) --- */}
-      <TouchableOpacity onPress={() => {}} style={{ alignItems: "center" }}>
-        <View
-          style={{
-            width: width * 0.22,
-            height: width * 0.22,
-            borderRadius: (width * 0.22) / 2,
-            borderWidth: 3,
-            borderColor: "#F85200",
-            justifyContent: "center",
-            alignItems: "center",
+        {/* CARD ESTATUS */}
+        <FirstCard
+          customStyle={{
+            paddingHorizontal: width * 0.06,
+            paddingVertical: height * 0.02,
+            marginTop: height * 0.025,
+            marginBottom: height * 0.02,
           }}
         >
-          <FontAwesome
-            name="wifi"
-            size={Math.min(width * 0.12, 40)}
-            color="#F85200"
-          />
-        </View>
-
-        <FirstSubTitle
-          text="WiFi"
-          style={{
-            textAlign: "center",
-            marginTop: 5,
-            fontSize: Math.min(width * 0.035, 14),
-            color: "#D9D9D9",
-          }}
-        />
-      </TouchableOpacity>
-    </>
-  )}
-</View>
-
-
-
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              marginBottom: 10,
+            }}
+          >
+            <FontAwesome name="wifi" size={28} color="#F85200" />
+            <FirstTitle text=" Status do dispositivo" fontSize={24} />
           </View>
 
-          {/* Linha divisória */}
+          <View style={{ flexDirection: "row", paddingHorizontal: 20 }}>
+            <FirstTitle text="Nível de bateria: " fontSize={18} />
+            <FirstSubTitle text="100%" style={{ color: "#D9D9D9" }} />
+          </View>
+
+          <View style={{ flexDirection: "row", paddingHorizontal: 20 }}>
+            <FirstTitle text="Dispositivo: " fontSize={18} />
+            <FirstSubTitle text="Ligado" style={{ color: "#D9D9D9" }} />
+          </View>
+
+          <View style={{ flexDirection: "row", paddingHorizontal: 20 }}>
+            <FirstTitle text="Sensores: " fontSize={18} />
+            <FirstSubTitle text="Conectados" style={{ color: "#D9D9D9" }} />
+          </View>
+        </FirstCard>
+
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "90%",
+            alignSelf: "center",
+            marginBottom: height * 0.05,
+          }}
+        />
+
+        {/* BOTÕES PRINCIPAIS */}
+        {connected && (
           <View
             style={{
-              height: 1,
-              backgroundColor: "#F85200",
-              width: "90%",
-              alignSelf: "center",
-              marginVertical: height * 0.00,
-              marginBottom: height * 0.04,
+              flexDirection: "row",
+              justifyContent: "space-around",
+              width: "100%",
+              marginBottom: 20,
             }}
-          />
-
-          {/* Título da seção de histórico */}
-          <FirstTitle
-            text="Histórico:"
-            fontSize={Math.min(width * 0.085, 34)}
-            style={{ paddingHorizontal: width * 0.05 }}
-          />
-
-          {/* Card de histórico — alerta de distância */}
-          <Pressable onPress={() => router.push("/HistoricoAlerta")}>
-            <FirstCard
-              customStyle={{
-                borderRadius: 0,
-                marginTop: height * 0.015,
-                padding: width * 0.04,
-              }}
-            >
+          >
+            {/* BOTÃO 1 */}
+            <TouchableOpacity onPress={toggleSensores}>
               <View
                 style={{
-                  flexDirection: "row",
+                  width: 90,
+                  height: 90,
+                  borderRadius: 45,
+                  borderWidth: 3,
+                  borderColor: "#F85200",
+                  justifyContent: "center",
                   alignItems: "center",
-                  gap: width * 0.04,
                 }}
               >
-
-                {/* Ícone do card */}
-                <View
-                  style={{
-                    width: width * 0.16,
-                    height: width * 0.16,
-                    borderRadius: width * 0.08,
-                    borderWidth: 2,
-                    borderColor: "#F85200",
-                    backgroundColor: "#F85200",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <FontAwesome
-                    name="bluetooth"
-                    size={Math.min(width * 0.1, 37)}
-                    color="#2D2D2D"
-                  />
-                </View>
-
-                {/* Textos do card */}
-                <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <FirstTitle
-                      text="Alerta de sensor de distância"
-                      fontSize={Math.min(width * 0.05, 20)}
-                    />
-                    <FirstSubTitle
-                      text="16/06"
-                      style={{
-                        fontSize: Math.min(width * 0.035, 14),
-                        color: "#D9D9D9",
-                      }}
-                    />
-                  </View>
-
-                  <FirstSubTitle
-                    text={"Alerta de distância registrado, clique para \nmais informações"}
-                    style={{
-                      marginTop: height * 0.005,
-                      fontSize: Math.min(width * 0.035, 14),
-                      lineHeight: Math.min(width * 0.045, 18),
-                      color: "#D9D9D9",
-                    }}
-                  />
-                </View>
+                <FontAwesome
+                  name={sensoresLigados ? "power-off" : "play"}
+                  size={40}
+                  color="#F85200"
+                />
               </View>
-            </FirstCard>
-          </Pressable>
+              <FirstSubTitle
+                text={
+                  sensoresLigados ? "Desligar Sensores" : "Ligar Sensores"
+                }
+                style={{
+                  textAlign: "center",
+                  marginTop: 5,
+                  color: "#D9D9D9",
+                }}
+              />
+            </TouchableOpacity>
 
-          {/* Card de histórico — possível acidente */}
-          <Pressable onPress={() => router.push("/HistoricoAlerta")}>
-            <FirstCard
-              customStyle={{
-                borderRadius: 0,
-                marginTop: height * 0.015,
-                padding: width * 0.04,
-              }}
-            >
+            {/* BOTÃO 2 */}
+            <TouchableOpacity onPress={desconectarTodos}>
               <View
                 style={{
-                  flexDirection: "row",
+                  width: 90,
+                  height: 90,
+                  borderRadius: 45,
+                  borderWidth: 3,
+                  borderColor: "#F85200",
+                  justifyContent: "center",
                   alignItems: "center",
-                  gap: width * 0.04,
                 }}
               >
-
-                {/* Ícone do card */}
-                <View
-                  style={{
-                    width: width * 0.16,
-                    height: width * 0.16,
-                    borderRadius: width * 0.08,
-                    borderWidth: 2,
-                    borderColor: "#F85200",
-                    backgroundColor: "#F85200",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <FontAwesome
-                    name="warning"
-                    size={Math.min(width * 0.1, 37)}
-                    color="#2D2D2D"
-                  />
-                </View>
-
-                {/* Textos */}
-                <View style={{ flex: 1 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <FirstTitle
-                      text="Alerta de possível acidente"
-                      fontSize={Math.min(width * 0.05, 20)}
-                    />
-                    <FirstSubTitle
-                      text="16/06"
-                      style={{
-                        fontSize: Math.min(width * 0.035, 14),
-                        color: "#D9D9D9",
-                      }}
-                    />
-                  </View>
-
-                  <FirstSubTitle
-                    text={"Alerta de um possível acidente registrado, \nclique para mais informações"}
-                    style={{
-                      marginTop: height * 0.005,
-                      fontSize: Math.min(width * 0.035, 14),
-                      lineHeight: Math.min(width * 0.045, 18),
-                      color: "#D9D9D9",
-                    }}
-                  />  
-                </View>
+                <FontAwesome name="rss" size={40} color="#F85200" />
               </View>
-            </FirstCard>
-          </Pressable>
+              <FirstSubTitle
+                text="Desconectar"
+                style={{
+                  textAlign: "center",
+                  marginTop: 5,
+                  color: "#D9D9D9",
+                }}
+              />
+            </TouchableOpacity>
 
-        </ScrollView>
-      </View>
-    );
-  }
+            {/* BOTÃO 3 */}
+            <TouchableOpacity onPress={abrirModalWifi}>
+              <View
+                style={{
+                  width: 90,
+                  height: 90,
+                  borderRadius: 45,
+                  borderWidth: 3,
+                  borderColor: "#F85200",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesome name="wifi" size={40} color="#F85200" />
+              </View>
+              <FirstSubTitle
+                text="WiFi"
+                style={{
+                  textAlign: "center",
+                  marginTop: 5,
+                  color: "#D9D9D9",
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View
+          style={{
+            height: 1,
+            backgroundColor: "#F85200",
+            width: "90%",
+            alignSelf: "center",
+            marginBottom: 20,
+          }}
+        />
+
+        <FirstTitle
+          text="Histórico:"
+          fontSize={32}
+          style={{ paddingHorizontal: width * 0.05 }}
+        />
+
+        {/* HISTÓRICO */}
+        <Pressable onPress={() => router.push("/HistoricoAlerta")}>
+          <FirstCard customStyle={{ marginTop: 20, padding: 15 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  borderWidth: 2,
+                  borderColor: "#F85200",
+                  backgroundColor: "#F85200",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesome
+                  name="bluetooth"
+                  size={35}
+                  color="#2D2D2D"
+                />
+              </View>
+
+              <View style={{ marginLeft: 15 }}>
+                <FirstTitle
+                  text="Alerta de sensor de distância"
+                  fontSize={20}
+                />
+                <FirstSubTitle
+                  text="16/06"
+                  style={{ color: "#D9D9D9", marginTop: 2 }}
+                />
+                <FirstSubTitle
+                  text="Clique para mais informações"
+                  style={{ color: "#D9D9D9", marginTop: 5 }}
+                />
+              </View>
+            </View>
+          </FirstCard>
+        </Pressable>
+      </ScrollView>
+    </View>
+  );
+}

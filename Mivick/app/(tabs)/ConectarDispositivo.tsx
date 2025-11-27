@@ -202,31 +202,7 @@ if (esp1Connected && esp2Connected) manager.stopDeviceScan();
       });
     }
 
-    // ---------------------- ENVIAR WI-FI VIA BLE ----------------------
-    async function enviarWifi(ssid: string, senha: string) {
-  const target = esp1Device;
-  if (!target) return;
-  try {
-    const msg = `WIFI|${ssid}|${senha}`;
-    await target.writeCharacteristicWithResponseForService(
-      SERVICE_UUID,
-      CHARACTERISTIC_UUID,
-      Buffer.from(msg, "utf-8").toString("base64")
-    );
-    addLog("Wi-Fi enviado via BLE para ESP1");
-        if (deviceId === null) return;
-        // salvar no backend
-        enviarParaBackend({
-          id_dispositivo: deviceId,
-          wifi_ssid: ssid,
-          wifi_senha: senha
-        });
-
-      } catch (e) {
-        console.error("❌ Erro ao enviar Wi-Fi:", e);
-        Alert.alert("Erro", "Falha ao enviar credenciais.");
-      }
-    }
+   
 // ---------------------- CONECTAR ESP1 ----------------------
 async function connectToEsp1(dev: Device) {
   try {
@@ -458,35 +434,8 @@ if (msg.startsWith("/9j/")) {
       }
     }
 
-    // ---------------------- UI HANDLERS ----------------------
-    function onSendWifiFromModal() {
-      if (!inputSsid || !inputPass) {
-        Alert.alert("Preencha", "Informe SSID e senha.");
-        return;
-      }
-
-      setSsidModalVisible(false);
-      enviarWifi(inputSsid.trim(), inputPass.trim());
-    }
-      async function abrirModalWifi() {
-    if (!deviceId) return;
-
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      const resp = await fetch(`http://10.135.37.162:3000/app/mivick/iot/wifi/${deviceId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-
-      const json = await resp.json();
-
-      if (json.ok) setWifiSalvo(json.lista);
-    } catch (e) {
-      console.log("Erro ao buscar wifi:", e);
-    }
-
-    setSsidModalVisible(true);
-  }
+ 
+     
 
 
     const openModal = async () => {
@@ -529,13 +478,8 @@ if (msg.startsWith("/9j/")) {
             onPress={openModal}
             customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
           />
-          {connected && (
-    <FirstButton
-      title="Configurar Wi-Fi "
-      onPress={abrirModalWifi}
-      customStyle={{ width: "85%", alignSelf: "center", marginBottom: 20 }}
-    />
-  )}
+          
+  
 
         
         {/* Modal de pareamento */}
@@ -601,17 +545,6 @@ if (msg.startsWith("/9j/")) {
         secureTextEntry
         style={styles.input}
       />
-
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
-        <TouchableOpacity onPress={() => setSsidModalVisible(false)} style={styles.buttonSecondary}>
-          <Text style={{ color: "#fff" }}>Cancelar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={onSendWifiFromModal} style={styles.buttonPrimary}>
-          <Text style={{ color: "#fff" }}>Enviar</Text>
-        </TouchableOpacity>
-      </View>
-
     </View>
   </View>
 </Modal>
