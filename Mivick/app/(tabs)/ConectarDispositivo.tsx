@@ -4,6 +4,7 @@
   import { FirstModal } from "@/components/FirstModal";
   import { FirstTitle } from "@/components/FirstTitle";
   import { HeaderComLogin } from "@/components/HeaderComLogin";
+  import { useRouter } from "expo-router";
   import AsyncStorage from "@react-native-async-storage/async-storage";
   import { useBle } from '@/components/providers/BleProvider';
   import { Buffer } from "buffer";
@@ -26,6 +27,7 @@
 
   global.Buffer = global.Buffer || Buffer;
   const { height } = Dimensions.get("window");
+const router = useRouter();
 
   // CONFIG
   const SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
@@ -47,7 +49,7 @@
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://10.135.37.203:3000/app/mivick/iot/registrar-dispositivo",
+        "http://10.135.37.162:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -106,7 +108,7 @@
         return;
       }
 
-      const response = await fetch("http://10.135.37.203:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://10.135.37.162:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -143,6 +145,7 @@
     const [inputPass, setInputPass] = useState("");
     const [deviceId, setDeviceId] = useState<number | null>(null);
     const [wifiSalvo, setWifiSalvo] = useState<{ ssid: string, senha: string }[]>([]);
+  const [ip, setIp] = useState<string>("");
 
     function addLog(msg: string) {
       console.log(msg);
@@ -233,9 +236,10 @@ async function connectToEsp1(dev: Device) {
         });
 
         if (msg.startsWith("OK|")) {
-          const ip = msg.split("|")[1];
-          console.log("WIFI_OK recebido:", msg);
-          conectarWebSocket(ip); // WS apenas do ESP1
+        const parts = msg.split("|");
+        const newIp = parts[1];
+        setIp(newIp);
+            AsyncStorage.setItem("device_ip", newIp);
         }
        if (esp2Device && inputSsid && inputPass) {
   esp2Device.writeCharacteristicWithoutResponseForService(
@@ -470,10 +474,18 @@ if (msg.startsWith("/9j/")) {
 
           <FirstButton
             title={connected ? "Conectado" : "Parear"}
-            onPress={openModal}
-            customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
+            onPress={() => {
+              if (connected) {
+                AsyncStorage.setItem("device_ip", ip);
+                router.push("./Configurações");
+              } else {
+            openModal();
+            }
+            }}
+          customStyle={{ marginBottom: 40, width: "85%", alignSelf: "center" }}
           />
-          
+
+            
   
 
         

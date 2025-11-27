@@ -17,7 +17,7 @@ import { styles } from '../components/styles/styleEditarContato';
 
 const { width, height } = Dimensions.get('window');
 
-const BASE_URL = 'http://10.135.37.203:3000';
+const BASE_URL = 'http://10.135.37.162:3000';
 const API_URL = `${BASE_URL}/app/mivick/contact`;
 
 export default function EditarContato() {
