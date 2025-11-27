@@ -20,7 +20,7 @@ import { styles } from '../components/styles/styleCadastrarContato';
 const { width, height } = Dimensions.get('window');
 
 // URL base da API
-const BASE_URL = 'http://10.135.37.162:3000';
+const BASE_URL = 'http://10.135.37.203:3000';
 const API_URL = `${BASE_URL}/app/mivick/contact`;
 
 export default function CadastrarContato() {

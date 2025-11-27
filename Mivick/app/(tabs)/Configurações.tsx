@@ -6,7 +6,8 @@ import { FirstCard } from "@/components/FirstCard/FirstCard";
 import { FirstSubTitle } from "@/components/FirstSubTitle";
 import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
-
+import { StyleSheet } from "react-native";
+import { FirstModal } from "@/components/FirstModal";
 import { useBle } from "@/components/providers/BleProvider";
 
 import { FontAwesome } from "@expo/vector-icons";
@@ -24,7 +25,11 @@ import {
   ScrollView,
   View,
   TouchableOpacity,
+  Modal,
+  Text,
+  TextInput,
 } from "react-native";
+
 
 import { Device } from "react-native-ble-plx";
 
@@ -123,7 +128,7 @@ export default function ConectarDispositivo() {
       }
 
       const response = await fetch(
-        "http://10.135.37.162:3000/app/mivick/iot/leituras",
+        "http://10.135.37.203:3000/app/mivick/iot/leituras",
         {
           method: "POST",
           headers: {
@@ -178,7 +183,7 @@ export default function ConectarDispositivo() {
       const token = await AsyncStorage.getItem("token");
 
       const resp = await fetch(
-        `http://10.135.37.162:3000/app/mivick/iot/wifi/${deviceId}`,
+        `http://10.135.37.203:3000/app/mivick/iot/wifi/${deviceId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -459,7 +464,78 @@ export default function ConectarDispositivo() {
             </View>
           </FirstCard>
         </Pressable>
+        {/* Modal Wi-Fi */}
+<Modal visible={ssidModalVisible} transparent animationType="slide">
+  <View style={styles.modalBackdrop}>
+    <View style={styles.modalBox}>
+
+      <Text style={{ color: "#fff", fontSize: 18, marginBottom: 12 }}>
+        Conectar ao Wi-Fi
+      </Text>
+
+      {wifiSalvo.length > 0 && (
+        <>
+          <Text style={{ color: "#aaa", marginBottom: 6 }}>Redes salvas:</Text>
+
+          {wifiSalvo.map((item, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => {
+                setInputSsid(item.ssid);
+                setInputPass(item.senha);
+              }}
+              style={{
+                padding: 10,
+                backgroundColor: "#222",
+                borderRadius: 6,
+                marginBottom: 6
+              }}
+            >
+              <Text style={{ color: "#fff" }}>{item.ssid}</Text>
+            </TouchableOpacity>
+          ))}
+
+          <View style={{ height: 1, backgroundColor: "#333", marginVertical: 10 }} />
+        </>
+      )}
+
+      <TextInput
+        placeholder="SSID"
+        placeholderTextColor="#999"
+        value={inputSsid}
+        onChangeText={setInputSsid}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Senha"
+        placeholderTextColor="#999"
+        value={inputPass}
+        onChangeText={setInputPass}
+        secureTextEntry
+        style={styles.input}
+      />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
+        <TouchableOpacity onPress={() => setSsidModalVisible(false)} style={styles.buttonSecondary}>
+          <Text style={{ color: "#fff" }}>Cancelar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={onSendWifiFromModal} style={styles.buttonPrimary}>
+          <Text style={{ color: "#fff" }}>Enviar</Text>
+        </TouchableOpacity>
+  </View>
+    </View>
+  </View>
+</Modal>
       </ScrollView>
     </View>
   );
 }
+  // ---------------------- STYLES ----------------------
+  const styles = StyleSheet.create({
+    modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center" },
+    modalBox: { width: "85%", padding: 16, backgroundColor: "#111", borderRadius: 8 },
+    input: { backgroundColor: "#222", color: "#fff", padding: 10, marginTop: 8, borderRadius: 6 },
+    buttonPrimary: { backgroundColor: "#F85200", padding: 10, borderRadius: 6, paddingHorizontal: 16 },
+    buttonSecondary: { backgroundColor: "#444", padding: 10, borderRadius: 6, paddingHorizontal: 16 },
+  });

@@ -47,7 +47,7 @@
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        "http://10.135.37.162:3000/app/mivick/iot/registrar-dispositivo",
+        "http://10.135.37.203:3000/app/mivick/iot/registrar-dispositivo",
         {
           method: "POST",
           headers: {
@@ -106,7 +106,7 @@
         return;
       }
 
-      const response = await fetch("http://10.135.37.162:3000/app/mivick/iot/leituras", {
+      const response = await fetch("http://10.135.37.203:3000/app/mivick/iot/leituras", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -348,7 +348,7 @@ if (msg.startsWith("/9j/")) {
     const parts = msg.split("|");
 
     // ---------------------------------
-    // 🚨 ALERTAS DE ACIDENTE
+    // ALERTAS DE ACIDENTE
     // Ex: CICLISTA|ALERTA|POSSIVEL_ACIDENTE|3
     // ---------------------------------
     if (parts[1] === "ALERTA") {
@@ -363,7 +363,7 @@ if (msg.startsWith("/9j/")) {
     }
 
     // ---------------------------------
-    // 📏 ULTRASSÔNICO
+    //  ULTRASSÔNICO
     // Ex: CICLISTA|ULTRASSONICO|OBJETO_PROXIMO|95.80
     // ---------------------------------
     if (parts[1] === "ULTRASSONICO") {
@@ -386,7 +386,7 @@ if (msg.startsWith("/9j/")) {
 
 
     // ---------------------------------
-    // 🌀 MPU / SW420
+    //  MPU / SW420
     // Ex: CICLISTA|MPU6050|BATIDA|17.22
     // Ex: CICLISTA|SW420|IMPACTO|1
     // ---------------------------------
@@ -433,11 +433,6 @@ if (msg.startsWith("/9j/")) {
         addLog(" Falha ao abrir WS: " + String(err));
       }
     }
-
- 
-     
-
-
     const openModal = async () => {
       const ok = await requestBlePermissions();
       if (!ok) {
@@ -494,60 +489,7 @@ if (msg.startsWith("/9j/")) {
           </View>
         </FirstModal>
 
-{/* Modal Wi-Fi */}
-<Modal visible={ssidModalVisible} transparent animationType="slide">
-  <View style={styles.modalBackdrop}>
-    <View style={styles.modalBox}>
 
-      <Text style={{ color: "#fff", fontSize: 18, marginBottom: 12 }}>
-        Conectar ao Wi-Fi
-      </Text>
-
-      {wifiSalvo.length > 0 && (
-        <>
-          <Text style={{ color: "#aaa", marginBottom: 6 }}>Redes salvas:</Text>
-
-          {wifiSalvo.map((item, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => {
-                setInputSsid(item.ssid);
-                setInputPass(item.senha);
-              }}
-              style={{
-                padding: 10,
-                backgroundColor: "#222",
-                borderRadius: 6,
-                marginBottom: 6
-              }}
-            >
-              <Text style={{ color: "#fff" }}>{item.ssid}</Text>
-            </TouchableOpacity>
-          ))}
-
-          <View style={{ height: 1, backgroundColor: "#333", marginVertical: 10 }} />
-        </>
-      )}
-
-      <TextInput
-        placeholder="SSID"
-        placeholderTextColor="#999"
-        value={inputSsid}
-        onChangeText={setInputSsid}
-        style={styles.input}
-      />
-
-      <TextInput
-        placeholder="Senha"
-        placeholderTextColor="#999"
-        value={inputPass}
-        onChangeText={setInputPass}
-        secureTextEntry
-        style={styles.input}
-      />
-    </View>
-  </View>
-</Modal>
 </ScrollView>
       </View>
     );
