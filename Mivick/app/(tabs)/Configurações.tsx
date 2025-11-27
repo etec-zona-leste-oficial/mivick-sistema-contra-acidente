@@ -8,10 +8,12 @@ import { FirstTitle } from "@/components/FirstTitle";
 import { HeaderComLogin } from "@/components/HeaderComLogin";
 
 // Contexto BLE criado no app, permitindo acessar dispositivos, conexão etc.
-import { useBle } from '@/components/providers/BleProvider'; 
+import { useBle } from '@/components/providers/BleProvider';
 
 // Biblioteca de ícones
 import { FontAwesome } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
+
 
 // Usado para converter strings em base64 antes de enviar via BLE
 import { Buffer } from "buffer";
@@ -44,7 +46,10 @@ export default function ConfigurarDispositivo() {
   // -------------------------------------------------------------
   async function enviarComando(cmd: string) {
     if (!connected) {
-      Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
+      Toast.show({
+        type: 'info',
+        text1: 'Nenhum dispositivo BLE conectado!'
+      })
       return;
     }
 
@@ -61,10 +66,19 @@ export default function ConfigurarDispositivo() {
         );
       }
 
-      Alert.alert("Comando enviado a todos", cmd);
+      Toast.show({
+        type: 'success',
+        text1: 'Comando enviado a todos',
+        text2: cmd
+      });
+
     } catch (e) {
       console.log(e);
-      Alert.alert("Erro", "Falha ao enviar comando.");
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Falha ao enviar comando.'
+      });
     }
   }
 
@@ -73,7 +87,10 @@ export default function ConfigurarDispositivo() {
   // -------------------------------------------------------------
   async function desconectarTodos() {
     if (!connected) {
-      Alert.alert("Aviso", "Nenhum dispositivo BLE conectado.");
+      Toast.show({
+        type: 'info',
+        text1: 'Nenhum dispositivo BLE conectado.'
+      });
       return;
     }
 
@@ -87,10 +104,18 @@ export default function ConfigurarDispositivo() {
       // Atualiza estado global de conexão
       setConnected(false);
 
-      Alert.alert("Desconectado", "Todos os dispositivos foram desconectados.");
+      Toast.show({
+        type: 'success',
+        text1: 'Todos os dispositivos foram desconectados.'
+      });
+
     } catch (e) {
       console.log(e);
-      Alert.alert("Erro", "Falha ao desconectar.");
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Falha ao desconectar.'
+      });
     }
   }
 
@@ -278,107 +303,112 @@ export default function ConfigurarDispositivo() {
           }}
         >
 
-          {/* Botão desligar dispositivo */}
-          <TouchableOpacity
-            onPress={() => enviarComando("POWEROFF")}
-            style={{ alignItems: "center" }}
-          >
-            <View
-              style={{
-                width: width * 0.22,
-                height: width * 0.22,
-                borderRadius: (width * 0.22) / 2,
-                borderWidth: 3,
-                borderColor: "#F85200",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <FontAwesome
-                name="power-off"
-                size={Math.min(width * 0.12, 40)}
-                color="#F85200"
-              />
-            </View>
+          {connected && (
+            <>
+              {/* Botão desligar dispositivo */}
+              <TouchableOpacity
+                onPress={() => enviarComando("ON")}
+                style={{ alignItems: "center" }}
+              >
+                <View
+                  style={{
+                    width: width * 0.22,
+                    height: width * 0.22,
+                    borderRadius: (width * 0.22) / 2,
+                    borderWidth: 3,
+                    borderColor: "#F85200",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <FontAwesome
+                    name="power-off"
+                    size={Math.min(width * 0.12, 40)}
+                    color="#F85200"
+                  />
+                </View>
 
-            <FirstSubTitle
-              text="Desligar dispositivo"
-              style={{
-                textAlign: "center",
-                marginTop: 5,
-                fontSize: Math.min(width * 0.035, 14),
-                color: "#D9D9D9",
-              }}
-            />
-          </TouchableOpacity>
+                <FirstSubTitle
+                  text="Ligar sensores"
+                  style={{
+                    textAlign: "center",
+                    marginTop: 5,
+                    fontSize: Math.min(width * 0.035, 14),
+                    color: "#D9D9D9",
+                  }}
+                />
+              </TouchableOpacity>
 
-          {/* Botão desligar sensores */}
-          <TouchableOpacity
-            onPress={() => enviarComando("OFF")}
-            style={{ alignItems: "center" }}
-          >
-            <View
-              style={{
-                width: width * 0.22,
-                height: width * 0.22,
-                borderRadius: (width * 0.22) / 2,
-                borderWidth: 3,
-                borderColor: "#F85200",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <FontAwesome
-                name="rss"
-                size={Math.min(width * 0.12, 40)}
-                color="#F85200"
-              />
-            </View>
+              {/* Botão desligar sensores */}
+              <TouchableOpacity
+                onPress={desconectarTodos}
+                style={{ alignItems: "center" }}
+              >
+                <View
+                  style={{
+                    width: width * 0.22,
+                    height: width * 0.22,
+                    borderRadius: (width * 0.22) / 2,
+                    borderWidth: 3,
+                    borderColor: "#F85200",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <FontAwesome
+                    name="rss"
+                    size={Math.min(width * 0.12, 40)}
+                    color="#F85200"
+                  />
+                </View>
 
-            <FirstSubTitle
-              text="Desligar Sensores"
-              style={{
-                textAlign: "center",
-                marginTop: 5,
-                fontSize: Math.min(width * 0.040, 14),
-                color: "#D9D9D9",
-              }}
-            />
-          </TouchableOpacity>
+                <FirstSubTitle
+                  text="Desligar Sensores"
+                  style={{
+                    textAlign: "center",
+                    marginTop: 5,
+                    fontSize: Math.min(width * 0.040, 14),
+                    color: "#D9D9D9",
+                  }}
+                />
+              </TouchableOpacity>
 
-          {/* Botão conectar WiFi */}
-          <TouchableOpacity
-            onPress={() => enviarComando("WIFI")}
-            style={{ alignItems: "center" }}
-          >
-            <View
-              style={{
-                width: width * 0.22,
-                height: width * 0.22,
-                borderRadius: (width * 0.22) / 2,
-                borderWidth: 3,
-                borderColor: "#F85200",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <FontAwesome
-                name="wifi"
-                size={Math.min(width * 0.12, 40)}
-                color="#F85200"
-              />
-            </View>
+              {/* Botão conectar WiFi */}
+              <TouchableOpacity
+                onPress={() => enviarComando("WIFI")}
+                style={{ alignItems: "center" }}
+              >
+                <View
+                  style={{
+                    width: width * 0.22,
+                    height: width * 0.22,
+                    borderRadius: (width * 0.22) / 2,
+                    borderWidth: 3,
+                    borderColor: "#F85200",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <FontAwesome
+                    name="wifi"
+                    size={Math.min(width * 0.12, 40)}
+                    color="#F85200"
+                  />
+                </View>
 
-            <FirstSubTitle
-              text="Conectar Wifi"
-              style={{
-                textAlign: "center",
-                marginTop: 5,
-                fontSize: Math.min(width * 0.035, 14),
-                color: "#D9D9D9",
-              }}
-            />
-          </TouchableOpacity>
+                <FirstSubTitle
+                  text="Desconectar"
+                  style={{
+                    textAlign: "center",
+                    marginTop: 5,
+                    fontSize: Math.min(width * 0.035, 14),
+                    color: "#D9D9D9",
+                  }}
+                />
+              </TouchableOpacity>
+            </>
+          )}
+
 
         </View>
 

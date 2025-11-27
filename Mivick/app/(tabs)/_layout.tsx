@@ -3,27 +3,27 @@ import FontProvider from '@/components/providers/FontProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Audio } from "expo-av";
+//import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 
-let sound: Audio.Sound | null = null;
+//let sound: Audio.Sound | null = null;
 
-async function carregarSom() {
-  const res = await Audio.Sound.createAsync(
-    require("../../assets/alerta.mp3"),
-    { shouldPlay: false } // garante preload
-  );
-  sound = res.sound;
-}
+//async function carregarSom() {
+  //const res = await Audio.Sound.createAsync(
+    //require("../../assets/alerta.mp3"),
+    //{ shouldPlay: false } // garante preload
+ // );
+ // sound = res.sound;
+//}
 
-async function tocarSomAlerta() {
-  if (!sound) return;
-  try {
-    await sound.stopAsync();
-  } catch {}
-  await sound.playFromPositionAsync(0);
-}
+//async function tocarSomAlerta() {
+  //if (!sound) return;
+  //try {
+    //await sound.stopAsync();
+  //} catch {}
+  //await sound.playFromPositionAsync(0);
+///
 
 
 
@@ -44,19 +44,19 @@ export default function TabsLayout() {
  useEffect(() => {
   let interval: any;
 
-  async function iniciar() {
-    await Audio.setAudioModeAsync({
-  playsInSilentModeIOS: true,
-  staysActiveInBackground: true,
-  shouldDuckAndroid: false,
-  playThroughEarpieceAndroid: false,
+  //async function iniciar() {
+   ///await Audio.setAudioModeAsync({
+  //playsInSilentModeIOS: true,
+  //staysActiveInBackground: true,
+  //shouldDuckAndroid: false,
+  //playThroughEarpieceAndroid: false,
   
-});
+//});
 
 
-    await carregarSom();   // 🔊 carrega som 1x
-    iniciarMonitoramento(); // 🟠 verifica alertas
-  }
+  //  await carregarSom();   // 🔊 carrega som 1x
+   // iniciarMonitoramento(); // 🟠 verifica alertas
+  //}
 
   async function iniciarMonitoramento() {
     const token = await AsyncStorage.getItem("token");
@@ -74,16 +74,16 @@ export default function TabsLayout() {
       const diff = Math.abs((agora.getTime() - alerta.getTime()) / 1000);
 
       if (diff <= 15) {
-        tocarSomAlerta(); // 🔊 toca
+      //  tocarSomAlerta(); // 🔊 toca
       }
     }, 5000);
   }
 
-  iniciar();
+  //iniciar();
 
   return () => {
     clearInterval(interval);
-    if (sound) sound.unloadAsync();
+  //  if (sound) sound.unloadAsync();
   };
 }, []);
 
