@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,11 +10,9 @@ export function BackButton() {
     <TouchableOpacity
       onPress={() => router.back()}
       style={{
-        position: "absolute",
-        left: 15,
-        top: 34,
-        zIndex: 10,
-        padding: 5,
+        padding: 8,
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <Ionicons name="chevron-back" size={28} color="#fff" />

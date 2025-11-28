@@ -5,6 +5,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { Logo } from "@/components/Logo";
 import { styles } from "./styleHeaderComLogin";
 import { Ionicons } from "@expo/vector-icons";
+import { BackButton } from "../BackButton/BackButton";
 
 export function HeaderComLogin() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export function HeaderComLogin() {
   return (
     <View style={styles.header}>
       {/* Logo + Nome */}
+        <BackButton />
       <View style={styles.logoContainer}>
         <TouchableOpacity onPress={() => router.push("./Home")}>
           <Logo />

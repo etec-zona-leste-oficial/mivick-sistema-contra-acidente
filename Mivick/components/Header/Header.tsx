@@ -3,6 +3,7 @@ import { View, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Logo } from '@/components/Logo';
 import { styles } from './styleHeader';
+import { BackButton } from '../BackButton/BackButton';
 
 export function Header() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export function Header() {
   return (
     <View style={styles.header}>
       {/* Espaço à esquerda */}
+      <BackButton />
       <View style={styles.spacer} />
 
       {/* Logo central clicável */}
