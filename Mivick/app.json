@@ -2,6 +2,7 @@
   "expo": {
     "name": "Mivick",
     "slug": "Mivick",
+    "owner": "bernass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -10,14 +11,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.david03-10.Mivick.ios"
+      "bundleIdentifier": "com.bernass.mivick"
     },
     "android": {
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-        
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -25,13 +25,12 @@
         "BLUETOOTH_CONNECT",
         "ACCESS_FINE_LOCATION"
       ],
-      "package": "com.david03_10.Mivick.android"
+      "package": "com.bernass.mivick.android"
     },
     "web": {
       "bundler": "metro",
       "output": "static"
     },
-    
     "plugins": [
       "expo-router",
       [
@@ -73,7 +72,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "92c67133-e047-4b90-9636-689b930261d7"
+        "projectId": "898c83f0-088e-4f5b-984b-7bd8508dd8d6"
       }
     }
   }
