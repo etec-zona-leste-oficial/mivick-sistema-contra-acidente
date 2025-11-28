@@ -145,7 +145,7 @@ export default function ConectarDispositivo() {
     }
   }
 
- 
+
 
   // =============================================================
   // DESCONECTAR TODOS
@@ -255,18 +255,26 @@ export default function ConectarDispositivo() {
           }}
         />
 
-        {/* BOTÕES PRINCIPAIS */}
         {connected && (
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-around",
+              justifyContent: "space-between",
+              alignItems: "center",
               width: "100%",
+              paddingHorizontal: 20,
               marginBottom: 20,
+              gap: 20, // funciona no RN moderno
             }}
           >
             {/* BOTÃO 1 */}
-            <TouchableOpacity onPress={toggleSensores}>
+            <TouchableOpacity
+              onPress={toggleSensores}
+              style={{
+                width: "45%",        // garante responsividade
+                alignItems: "center",
+              }}
+            >
               <View
                 style={{
                   width: 90,
@@ -284,20 +292,27 @@ export default function ConectarDispositivo() {
                   color="#F85200"
                 />
               </View>
+
               <FirstSubTitle
-                text={
-                  sensoresLigados ? "Desligar Sensores" : "Ligar Sensores"
-                }
+                text={sensoresLigados ? "Desligar Sensores" : "Ligar Sensores"}
                 style={{
                   textAlign: "center",
                   marginTop: 5,
                   color: "#D9D9D9",
+                  flexWrap: "wrap",       // permite quebra
+                  width: "100%",          // garante que o texto vai quebrar
                 }}
               />
             </TouchableOpacity>
 
             {/* BOTÃO 2 */}
-            <TouchableOpacity onPress={desconectarTodos}>
+            <TouchableOpacity
+              onPress={desconectarTodos}
+              style={{
+                width: "45%",
+                alignItems: "center",
+              }}
+            >
               <View
                 style={{
                   width: 90,
@@ -311,19 +326,23 @@ export default function ConectarDispositivo() {
               >
                 <FontAwesome name="rss" size={40} color="#F85200" />
               </View>
+
               <FirstSubTitle
                 text="Desconectar"
                 style={{
                   textAlign: "center",
                   marginTop: 5,
                   color: "#D9D9D9",
+                  flexWrap: "wrap",
+                  width: "100%",
                 }}
               />
             </TouchableOpacity>
-</View>  
-)}
+          </View>
+        )}
 
-   
+
+
         <FirstTitle
           text="Histórico:"
           fontSize={32}
@@ -370,7 +389,7 @@ export default function ConectarDispositivo() {
             </View>
           </FirstCard>
         </Pressable>
-    
+
       </ScrollView>
     </View>
   );
