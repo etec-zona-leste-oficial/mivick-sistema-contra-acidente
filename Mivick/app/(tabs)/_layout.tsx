@@ -8,7 +8,7 @@ import Toast from "react-native-toast-message"; //  ADICIONADO PARA OS ALERTAS
 
   async function buscarUltimoAlerta(id_dispositivo: number, token: string) {
     const resp = await fetch(
-      `http://10.135.37.162:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
+      `http://10.98.97.162:3000/app/mivick/iot/ultimo-alerta/${id_dispositivo}`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }
@@ -49,7 +49,7 @@ import Toast from "react-native-toast-message"; //  ADICIONADO PARA OS ALERTAS
 
   // ENVIA ALERTA PARA O BACKEND -> TWILIO
   try {
-    await fetch("http://10.135.37.162:3000/app/mivick/alerta/enviar", {
+    await fetch("http://10.98.97.162:3000/app/mivick/alerta/enviar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

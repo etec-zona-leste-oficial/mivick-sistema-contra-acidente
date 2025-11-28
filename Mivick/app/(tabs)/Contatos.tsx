@@ -23,7 +23,7 @@ type Contact = {
   foto?: string | null;
 };
 
-const BASE_URL = 'http://10.135.37.162:3000';
+const BASE_URL = 'http://10.98.97.162:3000';
 const API_URL = `${BASE_URL}/app/mivick/contact/`;
 
 export default function ContatoScreen() {

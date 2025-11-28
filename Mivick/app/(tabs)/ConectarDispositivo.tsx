@@ -47,7 +47,7 @@
         const token = await AsyncStorage.getItem("token");
 
         const response = await fetch(
-          "http://10.135.37.162:3000/app/mivick/iot/registrar-dispositivo",
+          "http://10.98.97.162:3000/app/mivick/iot/registrar-dispositivo",
           {
             method: "POST",
             headers: {
@@ -106,7 +106,7 @@
           return;
         }
 
-        const response = await fetch("http://10.135.37.162:3000/app/mivick/iot/leituras", {
+        const response = await fetch("http://10.98.97.162:3000/app/mivick/iot/leituras", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -334,7 +334,7 @@
         const token = await AsyncStorage.getItem("token");
 
         const resp = await fetch(
-          `http://10.135.37.162:3000/app/mivick/iot/wifi/${deviceId}`,
+          `http://10.98.97.162:3000/app/mivick/iot/wifi/${deviceId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

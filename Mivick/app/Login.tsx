@@ -46,7 +46,7 @@ export default function Login() {
   const [auth, setAuth] = useState<User | null>(null);
 
   // URL base da API
-  const API_URL = "http://10.135.37.162:3000";
+  const API_URL = "http://10.98.97.162:3000";
 
   // Estados controlando os inputs do formulário
   const [email, setEmail] = useState("");
