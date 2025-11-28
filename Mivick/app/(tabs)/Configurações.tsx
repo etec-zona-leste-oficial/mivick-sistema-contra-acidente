@@ -128,7 +128,7 @@ export default function ConectarDispositivo() {
       }
 
       const response = await fetch(
-        "http://10.98.97.162:3000/app/mivick/iot/leituras",
+        "https://mivick-project-backend.onrender.com/app/mivick/iot/leituras",
         {
           method: "POST",
           headers: {

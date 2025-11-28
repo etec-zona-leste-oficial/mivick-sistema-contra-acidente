@@ -15,7 +15,7 @@ import { styles } from '@/components/styles/stylePerfil'
 
 const { width, height } = Dimensions.get('window');
 
-const BASE_URL = 'http://10.98.97.162:3000';
+const BASE_URL = 'https://mivick-project-backend.onrender.com';
 const API_URL = `${BASE_URL}/app/mivick/user`;
 
 type UserData = {

@@ -27,7 +27,7 @@ export default function HistoricoAlerta() {
       const token = await AsyncStorage.getItem("token");
 
       const resp = await fetch(
-        `http://10.98.97.162:3000/app/mivick/iot/historico/${deviceId}`,
+        `https://mivick-project-backend.onrender.com/app/mivick/iot/historico/${deviceId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
