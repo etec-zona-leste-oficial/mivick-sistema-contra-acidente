@@ -92,7 +92,7 @@ export default function Perfil() {
       } else {
         Toast.show({
           type: 'error',
-          text1: data.error|| data.__raw || 'Falha ao carregar perfil.'
+          text1: data.error || data.__raw || 'Falha ao carregar perfil.'
         });
       }
     } catch (error) {
@@ -180,7 +180,7 @@ export default function Perfil() {
         type: 'error',
         text1: 'Falha de conexão com o servidor.'
       })
-      
+
     } finally {
       setSaving(false);
     }
@@ -217,9 +217,9 @@ export default function Perfil() {
       >
 
         <LinearGradient
-          colors={['#F85200',  '#000']}
-          start={{x: 0.5, y: 0}}
-          end={{x:0.5, y:1}}
+          colors={['#F85200', '#000']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
           style={styles.linearGrad}
         />
 
@@ -311,8 +311,8 @@ export default function Perfil() {
                   campo === 'nome'
                     ? 'user'
                     : campo === 'telefone'
-                    ? 'phone'
-                    : 'envelope'
+                      ? 'phone'
+                      : 'envelope'
                 }
                 size={Math.min(width * 0.06, 26)}
                 color="#F85200"
@@ -334,6 +334,7 @@ export default function Perfil() {
                 placeholderTextColor="#ccc"
                 value={(userData[campo] ?? '') as string}
                 editable={editing && !(campo === 'email' && googleUser)}
+                maskTelefone={campo === 'telefone'}
                 onChangeText={text =>
                   setUserData(prev => ({ ...prev, [campo]: text }))
                 }
