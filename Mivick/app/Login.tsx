@@ -178,6 +178,7 @@ export default function Login() {
 
       {/* Cabeçalho da aplicação */}
       <Header />
+      <BackButton/>
 
       <View style={styles.content}>
 

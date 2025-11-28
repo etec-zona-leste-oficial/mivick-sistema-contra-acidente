@@ -185,6 +185,7 @@ export default function Cadastro() {
     <SafeAreaView style={styles.container}>
       {/* Header fixo do app */}
       <Header />
+      <BackButton/>
 
 
 

@@ -11,7 +11,6 @@ export function Header() {
   return (
     <View style={styles.header}>
       {/* Espaço à esquerda */}
-      <BackButton />
       <View style={styles.spacer} />
 
       {/* Logo central clicável */}

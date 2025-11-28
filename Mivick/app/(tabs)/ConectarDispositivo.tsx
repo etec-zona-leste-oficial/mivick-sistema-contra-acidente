@@ -23,6 +23,7 @@
       StyleSheet
     } from "react-native";
     import { Device } from "react-native-ble-plx";
+    import { BackButton } from "@/components/BackButton/BackButton";
 
     global.Buffer = global.Buffer || Buffer;
     const { height } = Dimensions.get("window");
@@ -513,6 +514,7 @@
         <View style={{ flex: 1, backgroundColor: "#000" }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 90 }}>
             <HeaderComLogin />
+            <BackButton/>
 
             <FirstTitle text="Como conectar?" fontSize={40} style={{ marginTop: 20, alignSelf: "center" }} />
 

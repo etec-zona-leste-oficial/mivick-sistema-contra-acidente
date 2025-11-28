@@ -1,17 +1,27 @@
 // components/BackButton/BackButton.tsx
 import React from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function BackButton({ size = 28, color = "#fff" }: { size?: number; color?: string }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // garante header perfeito em qualquer dispositivo
 
   return (
     <TouchableOpacity
       onPress={() => router.back()}
-      style={[styles.button, { width: size + 20, height: size + 20, borderRadius: (size + 20) / 2 }]}
       activeOpacity={0.7}
+      style={[
+        styles.button,
+        {
+          width: size + 13,
+          height: size + 13,
+          borderRadius: (size + 15) / 2,
+          top: insets.top + 8, // fica na altura exata do header real
+        },
+      ]}
     >
       <Ionicons name="chevron-back" size={size} color={color} />
     </TouchableOpacity>
@@ -20,17 +30,16 @@ export function BackButton({ size = 28, color = "#fff" }: { size?: number; color
 
 const styles = StyleSheet.create({
   button: {
+    position: "absolute",
+    left: 12, // sempre no canto esquerdo do header
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ff4221ff", // tom ligeiramente mais suave de laranja/vermelho
-    shadowColor: "#000", // sombra mais escura e nítida
+    backgroundColor: "#ff4221ff",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.35,
     shadowRadius: 5,
-    elevation: 10, // sombra mais pronunciada no Android
-    position: "absolute",
-    left: 15,
-    bottom: 3
-    , // canto inferior esquerdo
+    elevation: 8,
+    zIndex: 50, // sempre acima do header
   },
 });
